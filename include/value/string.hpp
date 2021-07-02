@@ -1,8 +1,8 @@
 #pragma once
-#include "value/value_warp.hpp"
 #include "value/value_base.hpp"
-#include <cstdio>
 #include <string>
+#include <sstream>
+
 
 
 
@@ -20,7 +20,7 @@ public:
 	void SetValue(const char* s);
 
 	constexpr ValueType GetType()const;
-	
+	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 
 	void Print(int _)const;
 };
@@ -36,5 +36,8 @@ inline void String::SetValue(const char* s){ str = std::string(s); }
 inline void String::Print(int _)const { 
 	std::printf("\"%s\"",str.c_str());
 };
+inline void String::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+	stream <<'\"'<<str<<'\"';
+}
 
 }

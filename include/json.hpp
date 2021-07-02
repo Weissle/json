@@ -14,6 +14,6 @@ public:
 
 };
 
-Json::Json():ValueWarp(){}
+inline Json::Json():ValueWarp(){}
 
 }

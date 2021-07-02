@@ -1,8 +1,9 @@
 #include "json.hpp"
 #include <iostream>
-
+#include <sstream>
 using namespace std;
 int main(){
+
 	wjson::Json json;
 	json["happy"] = true;
 	json["sad"] = false;
@@ -13,13 +14,23 @@ int main(){
 	json["str_c"] = "string_c";
 	json["str"] = std::string("string");
 
+	json["int"] = 500;
+	json["double"] = 5.03;
+	json["array"].ToArray().Resize(3);
+	json["array"][2] = "idx2";
+	json["array"][0] = 1245364;
+
+	stringstream stream;
+	json.Dump(stream,4,' ');
+	cout<<stream.rdbuf()<<endl;
+
 	cout<< json.IsObject()<<endl;
 	cout<< json["happy"].IsBool()<<endl;
-	cout<< json["happy"].IsNone()<<endl;
+	cout<< json["happy"].IsNull()<<endl;
 	cout<< json["country"].IsObject()<<endl;
-	cout<< json["none"].IsNone()<<endl;
+	cout<< json["none"].IsNull()<<endl;
 	cout<< json["none"].IsNumber()<<endl;
-	json.Print();
+
 	return 0;
 }
 

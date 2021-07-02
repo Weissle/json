@@ -18,8 +18,8 @@ public:
 
 	constexpr ValueType GetType()const;
 	
+	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 
-	void Print(int _)const;
 };
 
 inline Bool::Bool():Bool(false){}
@@ -30,10 +30,9 @@ inline Bool::Bool(bool _v):ValueBase(ValueType::Bool),value_(_v){}
 inline bool Bool::GetValue()const{ return value_; }
 inline void Bool::SetValue(bool v_){ value_ = v_; }
 
-inline void Bool::Print(int _)const { 
-	if(value_) std::printf("true");
-	else std::printf("false");
-	return;
-};
+inline void Bool::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+	if(value_) stream<<"true";
+	else stream<<"false";
+}
 
 }
