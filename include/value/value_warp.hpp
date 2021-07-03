@@ -143,7 +143,7 @@ ValueWarp& ValueWarp::operator=(const int _value){
 
 ValueWarp ValueWarp::operator[](const std::string s){
 	if (*pptr == nullptr) *pptr = new Object();
-	if ((*pptr) -> GetType() != ValueType::Object) throw "Value type is not right";
+	if (IsObject() == false) throw "Value type is not right";
 	auto ptr = static_cast<Object*>(*pptr);
 	return ValueWarp((*ptr)[s]);
 }
@@ -151,13 +151,13 @@ ValueWarp ValueWarp::operator[](const std::string s){
 
 ValueWarp ValueWarp::operator[](const int idx){
 	if (*pptr == nullptr) *pptr = new Array();
-	if ((*pptr) -> GetType() != ValueType::Array) throw "Value type is not right";
+	if (IsArray() == false) throw "Value type is not right";
 	auto ptr = static_cast<Array*>(*pptr);
 	return ValueWarp((*ptr)[idx]);
 }
 
 void ValueWarp::Resize(const int s){
-	if ((*pptr) == nullptr || (*pptr) -> GetType() != ValueType::Array) throw "Value type is not right";
+	if (IsArray() == false) throw "Value type is not right";
 	auto ptr = static_cast<Array*>(*pptr);
 	ptr->Resize(s);
 }

@@ -13,7 +13,7 @@ class Array : public ValueBase{
 	Vector value_;
 public:
 	Array();
-
+	~Array();
 	ValueBase** operator[](int idx);
 
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
@@ -22,8 +22,24 @@ public:
 };
 
 inline Array::Array():ValueBase(ValueType::Array){}
+Array::~Array(){
+	for (const auto &pptr:value_){
+		if(pptr){
+			delete *pptr;
+			delete pptr;
+		}
+	}
+}
 
-inline void Array::Resize(int s_){
+void Array::Resize(int s_){
+	if(s_ < value_.size()){
+		for (int i = s_; i < value_.size(); ++i){ 
+			if(value_[i]){
+				delete *value_[i];
+				delete value_[i];
+			}
+		}
+	}
 	value_.resize(s_);
 }
 

@@ -24,6 +24,11 @@ int main(){
 	json.Dump(stream,4,' ');
 	cout<<stream.rdbuf()<<endl;
 
+	stream.clear();
+	json["array"].Resize(1);
+	json.Dump(stream,4,' ');
+	cout<<stream.rdbuf()<<endl;
+
 	cout<< json.IsObject()<<endl;
 	cout<< json["happy"].IsBool()<<endl;
 	cout<< json["happy"].IsNull()<<endl;
