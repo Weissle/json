@@ -19,8 +19,14 @@ class ValueWarp{
 	template<typename T1,typename T2>
 	void SetValue(const ValueType type,const T2 &value_);
 
+protected:
+	ValueWarp() = default;
+
+	ValueBase** Get();
+	void Set(ValueBase**);
+
+
 public:
-	ValueWarp();
 	ValueWarp(ValueBase**);
 
 	bool IsBool();
@@ -54,11 +60,10 @@ public:
 };
 
 
-inline ValueWarp::ValueWarp(){
-	pptr = new ValueBase*();
-}
-
 inline ValueWarp::ValueWarp(ValueBase **ptr):pptr(ptr){}
+
+inline ValueBase** ValueWarp::Get() { return pptr; }
+inline void ValueWarp::Set(ValueBase** pp_) { pptr = pp_;}
 
 inline bool ValueWarp::IsBool(){ return (*pptr) && (*pptr)->GetType() == ValueType::Bool; }
 inline bool ValueWarp::IsNumber(){ return (*pptr) && (*pptr)->GetType() == ValueType::Number; }

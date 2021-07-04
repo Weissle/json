@@ -1,6 +1,7 @@
 #pragma once
 
 #include "value/value_base.hpp"
+#include "value/value_base_pptr.hpp"
 
 #include <cstdio>
 #include <map>
@@ -9,12 +10,12 @@
 
 namespace wjson {
 
+using Map = std::map<std::string,ValueBasePPtr>;
 
 class Object : public ValueBase{
 	Map value_;
 public:
 	Object();
-	~Object();
 
 	ValueBase** operator[](std::string s);
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
@@ -23,18 +24,8 @@ public:
 
 inline Object::Object():ValueBase(ValueType::Object){}
 
-Object::~Object(){
-	for (const auto &p:value_){
-		auto &pptr = p.second;
-		assert(pptr != nullptr);
-		delete *pptr;
-		delete pptr;
-	}
-}
 inline ValueBase** Object::operator[](std::string s){ 
-	auto &tmp = value_[s];
-	if(tmp == nullptr) tmp = new ValueBase*();
-	return tmp;
+	return value_[s];
 }
 
 void Object::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
@@ -44,7 +35,7 @@ void Object::Dump(std::stringstream &stream,const int indent_num,const int inden
 		Indent(stream,indent_num,indent_char,indent_level+1);
 		stream << '\"' << it->first << "\" : ";
 
-		auto &tmp = *(it->second);
+		auto tmp = *(it->second);
 		if(tmp == nullptr) stream<<"none";
 		else tmp->Dump(stream, indent_num, indent_char, indent_level+1);
 	}
