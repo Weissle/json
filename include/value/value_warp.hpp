@@ -42,6 +42,7 @@ public:
 	ValueWarp& operator=(const LL _value);
 	ValueWarp& operator=(const double _value);
 	ValueWarp& operator=(const int _value);
+	ValueWarp& operator=(const nullptr_t nptr);
 
 	ValueWarp operator[](const std::string s);
 	ValueWarp operator[](const int idx);
@@ -81,7 +82,8 @@ ValueWarp& ValueWarp::ToType(const ValueType type){
 			case ValueType::Number : *pptr = new Number(); break;
 			case ValueType::String : *pptr = new String(); break;
 			case ValueType::Bool : *pptr = new Bool(); break;
-			case ValueType::Null : break;
+			case ValueType::Null : *pptr = new Null(); break;
+			default: throw "Unknown value type";
 		}
 	}
 	return *this;
@@ -143,6 +145,12 @@ ValueWarp& ValueWarp::operator=(const double _value){
 
 ValueWarp& ValueWarp::operator=(const int _value){
 	SetValue<Number>(ValueType::Number,_value);
+	return *this;
+}
+
+ValueWarp& ValueWarp::operator=(const nullptr_t nptr){
+	delete *pptr;
+	*pptr = nullptr;
 	return *this;
 }
 

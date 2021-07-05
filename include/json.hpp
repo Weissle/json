@@ -23,6 +23,6 @@ inline JsonAny<T>::JsonAny(){
 	ValueWarp::Set(vpptr);
 }
 
-using Json = JsonAny<>;
+using Json = JsonAny<Object>;
 
 }
