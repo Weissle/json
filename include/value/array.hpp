@@ -16,6 +16,11 @@ public:
 	Array();
 	ValueBase** operator[](int idx);
 
+	size_t Size()const;
+
+	Vector& GetValue();
+	const Vector& GetValue()const;
+
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 	void Resize(int s_);
 
@@ -31,6 +36,8 @@ inline ValueBase** Array::operator[](int idx){
 	return value_[idx];
 }
 
+inline size_t Array::Size()const{ return value_.size(); }
+
 void Array::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
 	stream << "[\n";
 	for(auto it=value_.begin(); it!=value_.end();++it){
@@ -45,5 +52,9 @@ void Array::Dump(std::stringstream &stream,const int indent_num,const int indent
 	stream << ']';
 	return;
 }
+
+inline Vector& Array::GetValue(){ return value_; }
+
+inline const Vector& Array::GetValue()const{ return value_; }
 
 }

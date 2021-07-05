@@ -18,6 +18,10 @@ public:
 	Object();
 
 	ValueBase** operator[](std::string s);
+	Map& GetValue();
+	const Map& GetValue()const;
+	size_t Size()const;
+	void Remove(const std::string s);
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 
 };
@@ -26,6 +30,14 @@ inline Object::Object():ValueBase(ValueType::Object){}
 
 inline ValueBase** Object::operator[](std::string s){ 
 	return value_[s];
+}
+
+void Object::Remove(const std::string s){
+	value_.erase(s);
+}
+
+inline size_t Object::Size()const{
+	return value_.size();
 }
 
 void Object::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
@@ -43,5 +55,9 @@ void Object::Dump(std::stringstream &stream,const int indent_num,const int inden
 	Indent(stream,indent_num,indent_char,indent_level);
 	stream<<'}';
 }
+
+inline Map& Object::GetValue(){ return value_; }
+
+inline const Map& Object::GetValue()const{ return value_; }
 
 }

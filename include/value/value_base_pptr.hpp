@@ -15,10 +15,8 @@ public:
 	ValueBase** Get();
 	void Set(ValueBase** pptr_);
 
-	ValueBase*& operator*()const{
-		return *pptr;
-	}
-	operator ValueBase** (){ return pptr; }
+	ValueBase*& operator*()const;
+	operator ValueBase** ()const;
 
 	ValueBasePPtr& operator=(ValueBasePPtr &other) = delete;
 	ValueBasePPtr& operator=(ValueBasePPtr &&other);
@@ -50,6 +48,12 @@ inline ValueBasePPtr::~ValueBasePPtr(){
 	// std::cout<<pptr<<" delete id: "<<++count<<std::endl;
 	if(pptr) delete *pptr;
 	delete pptr;
+}
+
+inline ValueBasePPtr::operator ValueBase** ()const{ return pptr; }
+
+inline ValueBase*& ValueBasePPtr::operator*()const{
+	return *pptr;
 }
 
 inline ValueBasePPtr& ValueBasePPtr::operator=(ValueBasePPtr &&other){
