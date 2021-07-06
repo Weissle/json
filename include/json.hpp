@@ -5,24 +5,31 @@
 #include "value/value_base.hpp"
 #include "value/object.hpp"
 
+#include <string>
+
 namespace wjson {
 
 // using Json = ValueWarp;
 
-template<typename T = Object>
-class JsonAny : public ValueWarp{
+class Json: public ValueWarp{
 	ValueBasePPtr vpptr;
 public:
-	JsonAny();
+	Json();
+	void Parse(const char *s);
+	void Parse(const std::string s);
 
 };
 
-template<typename T>
-inline JsonAny<T>::JsonAny(){
-	*vpptr = new T();
+inline Json::Json(){
+	*vpptr = new Object();
 	ValueWarp::Set(vpptr);
 }
+void Json::Parse(const char *s){
 
-using Json = JsonAny<Object>;
+}
+
+inline void Json::Parse(const std::string s){
+	Parse(s.c_str());
+}
 
 }
