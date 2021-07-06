@@ -8,7 +8,7 @@ class ValueBasePPtr{
 	ValueBase **pptr;
 public:
 	ValueBasePPtr();
-	ValueBasePPtr(ValueBasePPtr &other) = delete;
+	ValueBasePPtr(const ValueBasePPtr &other) = delete;
 	ValueBasePPtr(ValueBasePPtr &&other);
 	~ValueBasePPtr();
 
@@ -18,7 +18,7 @@ public:
 	ValueBase*& operator*()const;
 	operator ValueBase** ()const;
 
-	ValueBasePPtr& operator=(ValueBasePPtr &other) = delete;
+	ValueBasePPtr& operator=(const ValueBasePPtr &other) = delete;
 	ValueBasePPtr& operator=(ValueBasePPtr &&other);
 	
 };
