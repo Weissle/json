@@ -6,4 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(main main.cpp )
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/test)
+if(BUILD_TEST)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/test)
+endif()
