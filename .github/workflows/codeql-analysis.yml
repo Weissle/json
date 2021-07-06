@@ -64,7 +64,7 @@ jobs:
     #    uses a compiled language
 
     - run: cd tool && sh install_googletest.sh
-    - run: mkdir build && cd build && cmake ../ -DBUILD_TEST && make
+    - run: mkdir build && cd build && cmake ../ -DBUILD_TEST=TRUE && make
     - run: cd build/test && ./GeneratorTest
     #   make bootstrap
     #   make release
