@@ -7,6 +7,6 @@ mkdir build
 cd build
 cmake ../
 make
-make install
+sudo make install
 cd ../../..
 rm -rf google_tmp/
