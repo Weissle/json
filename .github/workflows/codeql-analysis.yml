@@ -65,7 +65,7 @@ jobs:
 
     - run: cd tool && sh install_googletest.sh
     - run: mkdir build && cd build && cmake ../ -DBUILD_TEST=TRUE && make
-    - run: make test
+    - run: cd build && make test
     #   make bootstrap
     #   make release
 
