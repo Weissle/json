@@ -63,7 +63,9 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    - run: mkdir build && cd build && cmake ../ && make
+    - run: cd tool && sh install_googletest.sh
+    - run: mkdir build && cd build && cmake ../ -DBUILD_TEST && make
+    - run: cd build/test && ./GeneratorTest
     #   make bootstrap
     #   make release
 
