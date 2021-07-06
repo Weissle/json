@@ -79,8 +79,8 @@ public:
 
 };
 
-void ValueWarp::RightTypeOrThrow(ValueType t)const{
-	if(((*pptr) == nullptr && t != ValueType::Null) || t != (*pptr)->GetType()) throw "Value type is not right";
+inline void ValueWarp::RightTypeOrThrow(ValueType t)const{
+	if(((*pptr) == nullptr && t != ValueType::Null) || (*pptr && t != (*pptr)->GetType())) throw "Value type is not right";
 }
 
 inline ValueWarp::ValueWarp(ValueBase **ptr):pptr(ptr){}
@@ -112,7 +112,9 @@ ValueWarp& ValueWarp::ToType(const ValueType type){
 }
 
 inline ValueWarp& ValueWarp::ToNull(){
-	return ToType(ValueType::Null);
+	delete *pptr;
+	*pptr = nullptr;
+	return *this;
 }
 inline ValueWarp& ValueWarp::ToObject(){
 	return ToType(ValueType::Object);
@@ -258,14 +260,16 @@ inline Vector& ValueWarp::GetArray(){
 }
 
 inline size_t ValueWarp::Size()const{
+	if (!(*pptr)) throw "This type has no Size() function"; 
 	ValueType t = (*pptr)->GetType();
-	if(t == ValueType::Array) return static_cast<Array*>(*pptr)->Size();
-	else if(t == ValueType::Object) return static_cast<Object*>(*pptr)->Size();
-	else if(t == ValueType::String) return static_cast<String*>(*pptr)->Size();
-	else throw "This type has no Size() function"; 
+	switch (t) {
+		case ValueType::Array: return static_cast<Array*>(*pptr)->Size();
+		case ValueType::Object: return static_cast<Object*>(*pptr)->Size();
+		case ValueType::String: return static_cast<String*>(*pptr)->Size();
+		default: throw  "This type has no Size() function"; 
+	}
+	return 0;
 }
-
-
 
 
 }

@@ -1,6 +1,7 @@
 #include "json.hpp"
 #include "gtest/gtest.h"
 
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 using namespace std;
@@ -27,6 +28,8 @@ protected:
 		//number
 		json1["int"] = 500;
 		json1["double"] = 5.03;
+		json1["long long"] = (long long)1 + INT32_MAX;
+		json1["long long max"] = (long long)INT64_MAX;
 
 		//array
 		json1["array"].ToArray().Resize(3);
@@ -62,6 +65,7 @@ TEST_F(JsonGeneratorTest, String){
 TEST_F(JsonGeneratorTest, Number){
 	EXPECT_EQ(json1["int"].GetInteger(), 500);
 	EXPECT_EQ(json1["double"].GetDouble(), 5.03);
+	EXPECT_EQ(json1["long long"].GetLongLong(), (long long)(0x80000000));
 }
 
 TEST_F(JsonGeneratorTest, Array){
@@ -80,5 +84,6 @@ int main(int argc,char* argv[]){
 
 	testing::InitGoogleTest(&argc,argv);
 	return RUN_ALL_TESTS();
+
 
 }

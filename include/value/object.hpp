@@ -47,7 +47,7 @@ void Object::Dump(std::stringstream &stream,const int indent_num,const int inden
 		Indent(stream,indent_num,indent_char,indent_level+1);
 		stream << '\"' << it->first << "\" : ";
 
-		auto tmp = *(it->second);
+		const auto tmp = *(it->second);
 		if(tmp == nullptr) stream<<"none";
 		else tmp->Dump(stream, indent_num, indent_char, indent_level+1);
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include "value/value_base.hpp"
 #include <cstdio>
+#include <math.h>
 
 
 
@@ -20,8 +21,8 @@ public:
 
 	double GetValue()const;
 	void SetValue(const double v_);
-	void SetValue(const LL v_);
-	void SetValue(const int v_);
+	//void SetValue(const LL v_);
+	//void SetValue(const int v_);
 
 	constexpr ValueType GetType()const;
 	
@@ -37,9 +38,12 @@ inline Number::Number(int v):ValueBase(ValueType::Number),value(v),isInteger(tru
 
 inline double Number::GetValue()const{ return value; }
 
-inline void Number::SetValue(const double v_){ value = v_; isInteger = false;}
-inline void Number::SetValue(const LL v_){ value = v_; isInteger = true;}
-inline void Number::SetValue(const int v_){ value = v_; isInteger = true;}
+inline void Number::SetValue(const double v_){
+	value = v_;
+	if(fabs(v_ - (long long)v_) > 1e-30) isInteger = false;
+}
+//inline void Number::SetValue(const LL v_){ value = v_; isInteger = true;}
+//inline void Number::SetValue(const int v_){ value = v_; isInteger = true;}
 
 inline void Number::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
 	if(isInteger) stream << LL(value);
