@@ -15,8 +15,8 @@ public:
 
 	//just look the next visible char, return '\0' if it not exists.
 	//rarely used
-	bool LookVChar(char &c)const;
-	char LookVChar()const;
+	//bool LookVChar(char &c)const;
+	//char LookVChar()const;
 
 	//just look the next visible char, return '\0' if it not exists. 
 	//And white space char will be skip; We can think they have been read.
@@ -46,6 +46,8 @@ inline bool ReaderInterface::IsWhiteSpace(const char c){
 	return false;
 }
 
+
+
 class CharPtrReader : ReaderInterface{
 	const char *ptr;
 	int idx;
@@ -66,6 +68,7 @@ public:
 
 inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),idx(0){}
 
+
 // return true means c is not '\0'
 inline bool CharPtrReader::LookChar(char &c)const{
 	c = *(ptr+idx);
@@ -77,12 +80,12 @@ inline char CharPtrReader::LookChar()const{
 	return *(ptr+idx);
 }
 
-bool CharPtrReader::LookVCharF(char &c){
+inline bool CharPtrReader::LookVCharF(char &c){
 	while(LookChar(c) && IsWhiteSpace(c)) ++idx;
 	return c !='\0';
 }
 
-char CharPtrReader::LookVCharF(){
+inline char CharPtrReader::LookVCharF(){
 	char tmp;
 	LookVCharF(tmp);
 	return tmp;
@@ -94,19 +97,19 @@ inline bool CharPtrReader::GetChar(char &c){
 	else return false;
 }
 
-char CharPtrReader::GetChar(){
+inline char CharPtrReader::GetChar(){
 	char tmp;
 	GetChar(tmp);
 	return tmp;
 }
 
-bool CharPtrReader::GetVChar(char &c){
+inline bool CharPtrReader::GetVChar(char &c){
 	c = LookVCharF();
 	if(c) ++idx;
 	return c != '\0';
 }
 
-char CharPtrReader::GetVChar(){
+inline char CharPtrReader::GetVChar(){
 	char tmp;
 	GetVChar(tmp);
 	return tmp;

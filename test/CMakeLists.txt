@@ -6,9 +6,12 @@ find_package(GTest REQUIRED)
 
 find_package(Threads REQUIRED)
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+message(STATUS ${CMAKE_SOURCE_DIR})
 
-add_executable(GeneratorTest src/generator_test.cpp )
-target_link_libraries(GeneratorTest PUBLIC gtest Threads::Threads )
+aux_source_directory(${CMAKE_SOURCE_DIR}/test/src ALL_TEST_CPP)
 
-gtest_discover_tests(GeneratorTest)
+add_executable(ALL_Test ${ALL_TEST_CPP})
+target_link_libraries(ALL_Test PUBLIC gtest gtest_main Threads::Threads )
+
+gtest_discover_tests(ALL_Test)

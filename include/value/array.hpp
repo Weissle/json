@@ -39,7 +39,7 @@ inline ValueBase** Array::operator[](int idx){
 
 inline size_t Array::Size()const{ return value_.size(); }
 
-void Array::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+inline void Array::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
 	stream << "[\n";
 	for(auto it=value_.begin(); it!=value_.end();++it){
 		if(it != value_.begin()) stream<<",\n";

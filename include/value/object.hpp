@@ -32,7 +32,7 @@ inline ValueBase** Object::operator[](std::string s){
 	return value_[s];
 }
 
-void Object::Remove(const std::string s){
+inline void Object::Remove(const std::string s){
 	value_.erase(s);
 }
 
@@ -40,7 +40,7 @@ inline size_t Object::Size()const{
 	return value_.size();
 }
 
-void Object::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+inline void Object::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
 	stream << "{\n";
 	for(auto it=value_.begin(); it!=value_.end();++it){
 		if(it != value_.begin()) stream << ",\n";

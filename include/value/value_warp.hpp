@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <map>
 #include <string>
 #include "value/value_base.hpp"
@@ -31,12 +32,13 @@ protected:
 public:
 	ValueWarp(ValueBase**);
 
-	bool IsBool();
-	bool IsNumber();
-	bool IsNull();
-	bool IsObject();
-	bool IsString();
-	bool IsArray();
+	bool IsBool()const;
+	bool IsNumber()const;
+	bool IsNull()const;
+	bool IsObject()const;
+	bool IsString()const;
+	bool IsArray()const;
+
 	ValueWarp& operator=(ValueBase* ptr_);
 	ValueWarp& operator=(const bool _value);
 	ValueWarp& operator=(const std::string s);
@@ -45,6 +47,14 @@ public:
 	ValueWarp& operator=(const double _value);
 	ValueWarp& operator=(const int _value);
 	ValueWarp& operator=(const std::nullptr_t nptr);
+
+	bool operator==(const bool _value)const;
+	bool operator==(const std::string s)const;
+	bool operator==(const char *s)const;
+	bool operator==(const LL _value)const;
+	bool operator==(const double _value)const;
+	bool operator==(const int _value)const;
+	bool operator==(const std::nullptr_t nptr)const;
 
 	ValueWarp operator[](const std::string s);
 	ValueWarp operator[](const int idx);
@@ -88,14 +98,14 @@ inline ValueWarp::ValueWarp(ValueBase **ptr):pptr(ptr){}
 inline ValueBase** ValueWarp::Get() { return pptr; }
 inline void ValueWarp::Set(ValueBase** pp_) { pptr = pp_;}
 
-inline bool ValueWarp::IsBool(){ return (*pptr) && (*pptr)->GetType() == ValueType::Bool; }
-inline bool ValueWarp::IsNumber(){ return (*pptr) && (*pptr)->GetType() == ValueType::Number; }
-inline bool ValueWarp::IsNull(){ return !(*pptr) || (*pptr)->GetType() == ValueType::Null; }
-inline bool ValueWarp::IsObject(){ return (*pptr) && (*pptr)->GetType() == ValueType::Object; }
-inline bool ValueWarp::IsString(){ return (*pptr) && (*pptr)->GetType() == ValueType::String; }
-inline bool ValueWarp::IsArray(){ return (*pptr) && (*pptr)->GetType() == ValueType::Array; }
+inline bool ValueWarp::IsBool()const{ return (*pptr) && (*pptr)->GetType() == ValueType::Bool; }
+inline bool ValueWarp::IsNumber()const{ return (*pptr) && (*pptr)->GetType() == ValueType::Number; }
+inline bool ValueWarp::IsNull()const{ return !(*pptr) || (*pptr)->GetType() == ValueType::Null; }
+inline bool ValueWarp::IsObject()const{ return (*pptr) && (*pptr)->GetType() == ValueType::Object; }
+inline bool ValueWarp::IsString()const{ return (*pptr) && (*pptr)->GetType() == ValueType::String; }
+inline bool ValueWarp::IsArray()const{ return (*pptr) && (*pptr)->GetType() == ValueType::Array; }
 
-ValueWarp& ValueWarp::ToType(const ValueType type){
+inline ValueWarp& ValueWarp::ToType(const ValueType type){
 	if ((*pptr) == nullptr || (*pptr) -> GetType() != type){
 		delete *pptr;
 		switch (type) {
@@ -148,43 +158,77 @@ inline ValueWarp& ValueWarp::operator=(ValueBase* ptr_){
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const bool _value){
+inline ValueWarp& ValueWarp::operator=(const bool _value){
 	SetValue<Bool>(ValueType::Bool, _value);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const char *s){
+inline ValueWarp& ValueWarp::operator=(const char *s){
 	SetValue<String>(ValueType::String, s);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const std::string s){
+inline ValueWarp& ValueWarp::operator=(const std::string s){
 	SetValue<String>(ValueType::String, s);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const LL _value){
+inline ValueWarp& ValueWarp::operator=(const LL _value){
 	SetValue<Number>(ValueType::Number,_value);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const double _value){
+inline ValueWarp& ValueWarp::operator=(const double _value){
 	SetValue<Number>(ValueType::Number,_value);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const int _value){
+inline ValueWarp& ValueWarp::operator=(const int _value){
 	SetValue<Number>(ValueType::Number,_value);
 	return *this;
 }
 
-ValueWarp& ValueWarp::operator=(const std::nullptr_t nptr){
+inline ValueWarp& ValueWarp::operator=(const std::nullptr_t nptr){
 	delete *pptr;
 	*pptr = nullptr;
 	return *this;
 }
 
-ValueWarp ValueWarp::operator[](const std::string s){
+inline bool ValueWarp::operator==(const bool _value)const{
+	RightTypeOrThrow(ValueType::Bool);
+	return (*static_cast<Bool*>(*pptr)).GetValue() == _value;
+}
+
+inline bool ValueWarp::operator==(const std::string s)const{
+	RightTypeOrThrow(ValueType::String);
+	return (*static_cast<String*>(*pptr)).GetValue() == s;
+}
+
+inline bool ValueWarp::operator==(const char *s)const{
+	RightTypeOrThrow(ValueType::String);
+	return (*static_cast<String*>(*pptr)).GetValue() == s;
+}
+
+inline bool ValueWarp::operator==(const LL _value)const{
+	RightTypeOrThrow(ValueType::Number);
+	return (*static_cast<Number*>(*pptr)).GetValue() == _value;
+}
+
+inline bool ValueWarp::operator==(const double _value)const{
+	RightTypeOrThrow(ValueType::Number);
+	return (*static_cast<Number*>(*pptr)).GetValue() == _value;
+}
+
+inline bool ValueWarp::operator==(const int _value)const{
+	RightTypeOrThrow(ValueType::Number);
+	return (*static_cast<Number*>(*pptr)).GetValue() == _value;
+}
+
+inline bool ValueWarp::operator==(const std::nullptr_t nptr)const{
+	return IsNull();
+}
+
+inline ValueWarp ValueWarp::operator[](const std::string s){
 	if (*pptr == nullptr) *pptr = new Object();
 	else RightTypeOrThrow(ValueType::Object);
 	auto ptr = static_cast<Object*>(*pptr);
@@ -192,19 +236,19 @@ ValueWarp ValueWarp::operator[](const std::string s){
 }
 
 
-ValueWarp ValueWarp::operator[](const int idx){
+inline ValueWarp ValueWarp::operator[](const int idx){
 	RightTypeOrThrow(ValueType::Array);
 	auto ptr = static_cast<Array*>(*pptr);
 	return ValueWarp((*ptr)[idx]);
 }
 
-void ValueWarp::Resize(const int s){
+inline void ValueWarp::Resize(const int s){
 	RightTypeOrThrow(ValueType::Array);
 	auto ptr = static_cast<Array*>(*pptr);
 	ptr->Resize(s);
 }
 
-void ValueWarp::Remove(const std::string s){
+inline void ValueWarp::Remove(const std::string s){
 	RightTypeOrThrow(ValueType::Object);
 	auto ptr = static_cast<Object*>(*pptr);
 	ptr -> Remove(s);

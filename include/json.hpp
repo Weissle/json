@@ -27,7 +27,7 @@ inline Json::Json(){
 	*vpptr = new Object();
 	ValueWarp::Set(vpptr);
 }
-void Json::Parse(const char *s){
+inline void Json::Parse(const char *s){
 	CharPtrReader reader(s);
 	if( reader.GetVChar() != '{' ) throw "json should start with { ";
 
