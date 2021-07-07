@@ -193,8 +193,7 @@ ValueWarp ValueWarp::operator[](const std::string s){
 
 
 ValueWarp ValueWarp::operator[](const int idx){
-	if (*pptr == nullptr) *pptr = new Array();
-	else RightTypeOrThrow(ValueType::Array);
+	RightTypeOrThrow(ValueType::Array);
 	auto ptr = static_cast<Array*>(*pptr);
 	return ValueWarp((*ptr)[idx]);
 }

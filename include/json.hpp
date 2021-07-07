@@ -30,6 +30,8 @@ inline Json::Json(){
 void Json::Parse(const char *s){
 	CharPtrReader reader(s);
 	if( reader.GetVChar() != '{' ) throw "json should start with { ";
+
+	delete *vpptr;
 	*vpptr = objectParser(reader);
 	
 }

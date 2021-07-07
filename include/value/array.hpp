@@ -23,6 +23,7 @@ public:
 
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 	void Resize(int s_);
+	void PushBack(ValueBase*);
 
 };
 
@@ -56,5 +57,9 @@ void Array::Dump(std::stringstream &stream,const int indent_num,const int indent
 inline Vector& Array::GetValue(){ return value_; }
 
 inline const Vector& Array::GetValue()const{ return value_; }
+
+inline void Array::PushBack(ValueBase* ptr){
+	value_.emplace_back(ptr);
+}
 
 }

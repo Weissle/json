@@ -10,6 +10,7 @@ public:
 	ValueBasePPtr();
 	ValueBasePPtr(const ValueBasePPtr &other) = delete;
 	ValueBasePPtr(ValueBasePPtr &&other);
+	ValueBasePPtr(ValueBase *ptr);
 	~ValueBasePPtr();
 
 	ValueBase** Get();
@@ -27,10 +28,14 @@ inline ValueBasePPtr::ValueBasePPtr(){
 	pptr = new ValueBase*();
 }
 
+inline ValueBasePPtr::ValueBasePPtr(ValueBase *ptr){
+	pptr = new ValueBase*();
+	*pptr = ptr;
+}
+
 inline ValueBasePPtr::ValueBasePPtr(ValueBasePPtr&& other){
 	pptr = other.pptr;
 	other.pptr = nullptr;
-	
 }
 
 

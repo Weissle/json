@@ -12,8 +12,9 @@ class String : public ValueBase{
 	std::string str;
 public:
 	String();
-	String(std::string s);
+	String(const std::string &s);
 	String(std::string &&s);
+	String(const char *s);
 
 	const std::string& GetValue()const;
 	std::string& GetValue();
@@ -31,8 +32,9 @@ public:
 
 inline String::String():ValueBase(ValueType::String){}
 
-inline String::String(const std::string s):ValueBase(ValueType::String),str(s){}
+inline String::String(const std::string &s):ValueBase(ValueType::String),str(s){}
 inline String::String(std::string&& s):ValueBase(ValueType::String),str(s){}
+inline String::String(const char*s):ValueBase(ValueType::String),str(s){}
 
 inline const std::string& String::GetValue()const{ return str; }
 inline std::string& String::GetValue(){ return str; }
