@@ -5,6 +5,7 @@
 #include "value/value_base.hpp"
 #include "value/object.hpp"
 #include "parser/reader.hpp"
+#include "parser/parser.hpp"
 
 
 #include <string>
@@ -27,7 +28,10 @@ inline Json::Json(){
 	ValueWarp::Set(vpptr);
 }
 void Json::Parse(const char *s){
-
+	CharPtrReader reader(s);
+	if( reader.GetVChar() != '{' ) throw "json should start with { ";
+	*vpptr = objectParser(reader);
+	
 }
 
 inline void Json::Parse(const std::string s){

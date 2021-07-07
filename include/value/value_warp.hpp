@@ -37,7 +37,7 @@ public:
 	bool IsObject();
 	bool IsString();
 	bool IsArray();
-
+	ValueWarp& operator=(ValueBase* ptr_);
 	ValueWarp& operator=(const bool _value);
 	ValueWarp& operator=(const std::string s);
 	ValueWarp& operator=(const char *s);
@@ -140,6 +140,12 @@ void ValueWarp::SetValue(const ValueType type,const T2 &value_){
 	}
 	auto ptr = static_cast<T1*>(*pptr);
 	ptr->SetValue(value_);
+}
+
+inline ValueWarp& ValueWarp::operator=(ValueBase* ptr_){
+	delete *pptr;
+	*pptr = ptr_;
+	return *this;
 }
 
 ValueWarp& ValueWarp::operator=(const bool _value){

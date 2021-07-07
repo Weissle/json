@@ -11,6 +11,10 @@ class ReaderInterface{
 public:
 	bool IsWhiteSpace(const char c);
 
+	// just look but not take.
+	bool LookChar(char &c);
+	char LookChar();
+
 	// Get char include white space
 	bool GetChar(char &c);
 	char GetChar();
@@ -30,9 +34,12 @@ inline bool ReaderInterface::IsWhiteSpace(const char c){
 class CharPtrReader : ReaderInterface{
 	const char *ptr;
 	int idx;
-	int size;
 public:
 	CharPtrReader(const char *p_);
+
+	// just look but not take.
+	bool LookChar(char &c);
+	char LookChar();
 
 	// Get char include white space
 	bool GetChar(char &c);
@@ -44,16 +51,24 @@ public:
 
 };
 
-inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),size(-1),idx(0){}
+inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),idx(0){}
+
+// return true means c is not '\0'
+inline bool CharPtrReader::LookChar(char &c){
+	c = *(ptr+idx);
+	if(c == 0) return false;
+	else return true;
+}
+
+inline char CharPtrReader::LookChar(){
+	return *(ptr+idx);
+}
 
 // return true means c is not '\0'
 inline bool CharPtrReader::GetChar(char &c){
-	c = *(ptr+idx);
-	if(c == 0) return false;
-	else{
-		++idx;
-		return true;
-	}
+	bool tmp = LookChar(c);
+	if(tmp) { ++idx; return true; }
+	else return false;
 }
 
 inline char CharPtrReader::GetChar(){
