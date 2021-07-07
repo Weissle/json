@@ -4,6 +4,8 @@
 #include "value/value_warp.hpp"
 #include "value/value_base.hpp"
 #include "value/object.hpp"
+#include "parser/reader.hpp"
+
 
 #include <string>
 
