@@ -43,13 +43,25 @@ Null* nullParser(R &reader);
 template <typename R>
 Array* arrayParser(R &reader);
 
-//TODO : Escape char
 template <typename R>
 std::string readStr(R &reader){
 	std::string ret;
 	char c;
 	while(reader.GetChar(c)){
 		if(c == '\"') return ret;
+		else if( c == '\\' ){
+			char tmp = reader.GetChar();
+			switch (tmp) {
+				case 'b': c = '\b'; break;
+				case 'f': c = '\f'; break;
+				case 'n': c = '\n'; break;
+				case 'r': c = '\r'; break;
+				case 't': c = '\t'; break;
+				case '"': c = '\"'; break;
+				case '\\': c = '\\'; break;
+				default: throw "unknow escape character";
+			}
+		}
 		ret.push_back(c);
 	}
 	throw "error when read a string, all char have been read and do not meet a \"";
@@ -110,6 +122,7 @@ Object* objectParser(R &reader){
 	return ret;
 }
 
+
 template <typename R>
 String* stringParser(R &reader){
 	return new String(readStr(reader));
@@ -117,14 +130,16 @@ String* stringParser(R &reader){
 
 template <typename R>
 Bool* boolParser(R &reader,bool exp){
+	static const std::array<char, 3> true_str{'r','u','e'};
+	static const std::array<char, 4> false_str{'a','l','s','e'};
 	char c;
 	if(exp){
-		std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
-		if(tmp != std::array<char, 3>{'r','u','e'}) throw "strange value type";
+		const std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
+		if(tmp != true_str) throw "strange value type";
 	}
 	else{
-		std::array<char,4> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar(),reader.GetChar()};
-		if(tmp != std::array<char, 4>{'a','l','s','e'}) throw "strange value type";
+		const std::array<char,4> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar(),reader.GetChar()};
+		if(tmp != false_str) throw "strange value type";
 	}
 	return new Bool(exp);
 	
@@ -133,8 +148,9 @@ Bool* boolParser(R &reader,bool exp){
 template <typename R>
 Null* nullParser(R &reader){
 	char c;
-	std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
-	if(tmp != std::array<char, 3>{'u','l','l'}) throw "strange value type";
+	static const std::array<char,3> null_str{'u','l','l'};
+	const std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
+	if(tmp != null_str) throw "strange value type";
 	return new Null();
 }
 
