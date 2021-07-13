@@ -17,19 +17,22 @@ namespace wjson {
 // The first char of value have been read in all functions below.
 // such as string is "<char><char><char>" , when we call functions readStr or stringParser, the first '\"' have benn read. 
 // Thus it will get <char><char><char>" and finish it's work when it meet '\"'.
-
+bool isDigit(const char c);
 
 template <typename R>
 std::string readStr(R &reader);
 
 template <typename R>
-ValueBase* valueParser(R &reader);
+ValueBase* anyParser(R &reader);
 
 template <typename R>
 Object* objectParser(R &reader);
 
 template <typename R>
 String* stringParser(R &reader);
+
+template <typename R>
+long long readerInteger(R &reader);
 
 template <typename R>
 Number* numberParser(R &reader);
@@ -42,6 +45,10 @@ Null* nullParser(R &reader);
 
 template <typename R>
 Array* arrayParser(R &reader);
+
+inline bool isDigit(const char c){
+	return c>='0' && c<='9';
+}
 
 template <typename R>
 std::string readStr(R &reader){
@@ -80,7 +87,11 @@ ValueBase* anyParser(R &reader){
 		case '{': value = objectParser(reader); break;
 		case '[': value = arrayParser(reader); break;
 		case '\0': throw "there is no value for this key?";
-		default: throw "unknow value type";
+		default: try {
+			value = numberParser(reader);
+		} catch (std::exception e) {
+			throw "unknow value type";
+		}
 	}
 	return value;
 
@@ -126,6 +137,47 @@ Object* objectParser(R &reader){
 template <typename R>
 String* stringParser(R &reader){
 	return new String(readStr(reader));
+}
+
+template <typename R>
+long long readerInteger(R &reader){
+	char c = reader.GetVChar();
+	bool neg = (c == '-');
+	long long num = 0;
+	if(c != '-' && c!='+'){
+		if(isDigit(c) == false) throw "error when parser a number, should start with - or digit";
+		else num = c-'0';
+	}
+	while(isDigit(reader.LookChar())){
+		c = reader.GetChar();
+		num *= 10;
+		num += c - '0';
+	}
+	if(neg) num *= -1;
+	return num;
+}
+
+template <typename R>
+Number* numberParser(R &reader){
+	long long int_part = readerInteger(reader);
+	bool neg = int_part < 0;
+	char c = reader.GetChar();
+
+	double decimal_part = 0;
+	if(c == '.'){
+		double tmp = 0.1;
+		while(reader.GetChar(c) && isDigit(c)){
+			decimal_part += tmp * (c - '0');
+			tmp *= 0.1;
+		}
+		if(neg) decimal_part *= -1;
+	}
+	int pow_ten = 1;
+	if(c == 'e' || c == 'E'){
+		pow_ten = std::pow(10,readerInteger(reader));
+	}
+	return new Number((decimal_part + int_part) * pow_ten);
+
 }
 
 template <typename R>

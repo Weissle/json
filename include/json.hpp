@@ -20,6 +20,9 @@ public:
 	Json();
 	void Parse(const char *s);
 	void Parse(const std::string s);
+	void ParseAny(const char *s);
+	void ParseAny(const std::string s);
+	void ParseAny(CharPtrReader &reader);
 
 };
 
@@ -29,15 +32,26 @@ inline Json::Json(){
 }
 inline void Json::Parse(const char *s){
 	CharPtrReader reader(s);
-	if( reader.GetVChar() != '{' ) throw "json should start with { ";
-
-	delete *vpptr;
-	*vpptr = objectParser(reader);
-	
+	if( reader.LookVCharF() != '{' ) throw "json should start with { ";
+	ParseAny(reader);
 }
 
 inline void Json::Parse(const std::string s){
 	Parse(s.c_str());
+}
+
+inline void Json::ParseAny(const char *s){
+	CharPtrReader reader(s);
+	ParseAny(reader);
+}
+
+inline void Json::ParseAny(const std::string s){
+	ParseAny(s.c_str());
+}
+
+inline void Json::ParseAny(CharPtrReader &reader){
+	delete *vpptr;
+	*vpptr = anyParser(reader);
 }
 
 }
