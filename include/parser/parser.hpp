@@ -14,10 +14,11 @@
 
 namespace wjson {
 
-// The first char of value have been read in all functions below.
+bool isDigit(const char c);
+
+// The first char of value have been read in all functions below except numberParser.
 // such as string is "<char><char><char>" , when we call functions readStr or stringParser, the first '\"' have benn read. 
 // Thus it will get <char><char><char>" and finish it's work when it meet '\"'.
-bool isDigit(const char c);
 
 template <typename R>
 std::string readStr(R &reader);
@@ -78,14 +79,14 @@ std::string readStr(R &reader){
 template <typename R>
 ValueBase* anyParser(R &reader){
 	ValueBase *value;
-	char c = reader.GetVChar();
+	char c = reader.LookVCharF();
 	switch (c) {
-		case 'n': value = nullParser(reader); break;
-		case 't': value = boolParser(reader,true); break;
-		case 'f': value = boolParser(reader,false); break;
-		case '\"': value = stringParser(reader); break;
-		case '{': value = objectParser(reader); break;
-		case '[': value = arrayParser(reader); break;
+		case 'n': reader.GetChar(); value = nullParser(reader); break;
+		case 't': reader.GetChar(); value = boolParser(reader,true); break;
+		case 'f': reader.GetChar(); value = boolParser(reader,false); break;
+		case '\"': reader.GetChar(); value = stringParser(reader); break;
+		case '{': reader.GetChar(); value = objectParser(reader); break;
+		case '[': reader.GetChar(); value = arrayParser(reader); break;
 		case '\0': throw "there is no value for this key?";
 		default: try {
 			value = numberParser(reader);
