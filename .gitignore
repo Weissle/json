@@ -4,7 +4,3 @@
 compile_commands.json
 *.out
 
-/tool/*
-!/tool/amalgamate.txt
-!/tool/*.sh
-

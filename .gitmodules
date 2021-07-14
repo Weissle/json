@@ -1,0 +1,6 @@
+[submodule "amalgamate"]
+	path = tool/amalgamate
+	url = https://github.com/Weissle/amalgamate.git
+[submodule "tool/amalgamate"]
+	path = tool/amalgamate
+	url = https://github.com/Weissle/amalgamate.git
