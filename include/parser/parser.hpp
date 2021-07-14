@@ -162,12 +162,14 @@ template <typename R>
 Number* numberParser(R &reader){
 	long long int_part = readerInteger(reader);
 	bool neg = int_part < 0;
-	char c = reader.GetChar();
+	char c = reader.LookChar();
 
 	double decimal_part = 0;
 	if(c == '.'){
+		reader.GetChar();
 		double tmp = 0.1;
-		while(reader.GetChar(c) && isDigit(c)){
+		while(reader.LookChar(c) && isDigit(c)){
+			reader.GetChar();
 			decimal_part += tmp * (c - '0');
 			tmp *= 0.1;
 		}
@@ -175,6 +177,7 @@ Number* numberParser(R &reader){
 	}
 	int pow_ten = 1;
 	if(c == 'e' || c == 'E'){
+		reader.GetChar();
 		pow_ten = std::pow(10,readerInteger(reader));
 	}
 	return new Number((decimal_part + int_part) * pow_ten);
