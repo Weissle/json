@@ -3,9 +3,8 @@
 /**/.cache
 compile_commands.json
 *.out
-tool/
 
-!tool/amalgamate.txt
-!tool/amalgamate_to_one.sh
-!tool/install_googletest.sh
+/tool/*
+!/tool/amalgamate.txt
+!/tool/*.sh
 
