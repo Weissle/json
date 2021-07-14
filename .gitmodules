@@ -1,0 +1,3 @@
+[submodule "tool/amalgamate"]
+	path = tool/amalgamate
+	url = https://github.com/Weissle/amalgamate.git
