@@ -17,6 +17,7 @@ namespace wjson {
 class Json: public ValueWarp{
 	ValueBasePPtr vpptr;
 public:
+	std::string parserInfo;
 	Json();
 	void Parse(const char *s);
 	void Parse(const std::string s);
@@ -51,7 +52,13 @@ inline void Json::ParseAny(const std::string s){
 
 inline void Json::ParseAny(CharPtrReader &reader){
 	delete *vpptr;
-	*vpptr = anyParser(reader);
+	parserInfo.clear();
+	try{
+		*vpptr = AnyParser(reader);
+		parserInfo = "ok";
+	}catch(std::exception e){
+		parserInfo = e.what();
+	}
 }
 
 }

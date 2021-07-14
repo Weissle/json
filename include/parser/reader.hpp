@@ -1,15 +1,14 @@
 #pragma once
 
 #include <set>
+#include <cctype>
 #include <array>
 
 namespace wjson {
 
-constexpr std::array<char,4> whiterSpaces = {'\n','\t',' ','\r'};
 class ReaderInterface{
 
 public:
-	bool IsWhiteSpace(const char c);
 
 	// Look and Get function return false means there is no more char.
 
@@ -38,14 +37,6 @@ public:
 	bool GetVChar(char &c);
 	char GetVChar();
 };
-
-inline bool ReaderInterface::IsWhiteSpace(const char c){
-	for (const auto &ws:whiterSpaces){
-		if(c==ws) return true;
-	}	
-	return false;
-}
-
 
 
 class CharPtrReader : ReaderInterface{
@@ -81,7 +72,7 @@ inline char CharPtrReader::LookChar()const{
 }
 
 inline bool CharPtrReader::LookVCharF(char &c){
-	while(LookChar(c) && IsWhiteSpace(c)) ++idx;
+	while(LookChar(c) && isspace(c)) ++idx;
 	return c !='\0';
 }
 
