@@ -123,33 +123,37 @@ ValueBasePtr ObjectParser(R &reader){
 	ValueBasePtr ret(new Object());
 	auto &obj = *static_cast<Object*>(ret.get());
 
-	char c;
-	while(reader.GetVChar(c)){
-		if(c == '}') return std::move(ret);
-		else if(c == '\"'){
-			do{
-				//parser key
-				std::string key = ReadStr(reader);
-				if(reader.GetVChar() != ':') throw " : should after a key";
-
-				//parser value
-				auto &pptr_ = obj[key];
-				*pptr_ = AnyParser(reader);
-
-				//is more ? 
-				if(reader.LookVCharF() == ','){
-					reader.GetChar();
-					if(reader.GetVChar() != '\"') throw " key should after the ',' ";
-				}
-				else break;
-			}while(true);
-		}
-		else {
-			throw "A object's key should start with \"";
-			break;
-		}
+	char c = reader.GetVChar();
+	if(c == '}') return std::move(ret);
+	else if(c == ',') {
+		if(reader.GetVChar(c) == '}') return std::move(ret);
+		else throw "If the first char in object is comma, the object should be empty";
 	}
-	throw "error when parser a object, all char have been read and do not meet a }";
+	else if(c == '\"'){
+		do{
+			//parser key
+			std::string key = ReadStr(reader);
+			if(reader.GetVChar() != ':') throw " : should after a key";
+
+			//parser value
+			auto &pptr_ = obj[key];
+			*pptr_ = AnyParser(reader);
+
+			//is more ? 
+			c = reader.GetVChar();
+			if(c == ','){
+				c = reader.GetVChar();
+				if(c == '}')break;
+				else if(c=='\"') continue;
+				else throw "error occur.";
+			}
+			else if (c == '}') break;
+			else throw "error occur.";
+		}while(true);
+	}
+	else {
+		throw "A object's key should start with \"";
+	}
 	return std::move(ret);
 }
 
@@ -239,11 +243,23 @@ ValueBasePtr ArrayParser(R &reader){
 	ValueBasePtr ret(new Array());
 	auto &arr = *static_cast<Array*>(ret.get());
 	char c = reader.LookVCharF();
+	if(c == ']'){
+		reader.GetChar();
+		return std::move(ret);
+	}
+	else if(c == ',') {
+		reader.GetChar();
+		if(reader.GetVChar() != ']'){
+			throw "A array have only one comma should be empty";
+		}
+		return std::move(ret);
+	}
 	while(c != ']'){
 		auto tmp = std::make_shared<ValueBasePtr>(AnyParser(reader));
 		arr.PushBack(tmp);
 		c = reader.GetVChar();
-		if(c != ',' && c!=']') throw "strange char in array";
+		if(c == ',' && reader.LookVCharF() != ']') continue;
+		else if(c == ']') break;
 	}
 	return std::move(ret);
 }
