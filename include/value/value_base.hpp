@@ -7,6 +7,7 @@
 #include <memory>
 #include <assert.h>
 #include <sstream>
+#include "utils/shared_not_null_ptr.hpp"
 
 
 
@@ -41,5 +42,7 @@ inline ValueType ValueBase::GetType()const{ return type_; }
 
 inline void ValueBase::Dump(std::stringstream  &stream, const int indent, const int indent_char, const int indent_level)const{ return; }
 
+using ValueBasePtr = std::unique_ptr<ValueBase>;
+using ValueBasePPtr = SharedNotNullPtr<ValueBasePtr>;
 
 }

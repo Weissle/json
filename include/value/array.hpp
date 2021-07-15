@@ -1,9 +1,10 @@
 #pragma once
 
 #include "value/value_base.hpp"
-#include "value/value_base_pptr.hpp"
+#include "utils/shared_not_null_ptr.hpp"
 
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -14,7 +15,7 @@ class Array : public ValueBase{
 	Vector value_;
 public:
 	Array();
-	ValueBase** operator[](int idx);
+	ValueBasePPtr& operator[](int idx);
 
 	size_t Size()const;
 
@@ -23,7 +24,7 @@ public:
 
 	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
 	void Resize(int s_);
-	void PushBack(ValueBase*);
+	void PushBack(ValueBasePPtr p);
 
 };
 
@@ -33,7 +34,7 @@ inline void Array::Resize(int s_){
 	value_.resize(s_);
 }
 
-inline ValueBase** Array::operator[](int idx){ 
+inline ValueBasePPtr& Array::operator[](int idx){ 
 	return value_[idx];
 }
 
@@ -58,8 +59,8 @@ inline Vector& Array::GetValue(){ return value_; }
 
 inline const Vector& Array::GetValue()const{ return value_; }
 
-inline void Array::PushBack(ValueBase* ptr){
-	value_.emplace_back(ptr);
+inline void Array::PushBack(ValueBasePPtr p){
+	value_.emplace_back(std::move(p));
 }
 
 }

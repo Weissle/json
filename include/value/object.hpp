@@ -1,7 +1,7 @@
 #pragma once
 
 #include "value/value_base.hpp"
-#include "value/value_base_pptr.hpp"
+#include "utils/shared_not_null_ptr.hpp"
 
 #include <cstdio>
 #include <map>
@@ -17,7 +17,7 @@ class Object : public ValueBase{
 public:
 	Object();
 
-	ValueBase** operator[](std::string s);
+	ValueBasePPtr& operator[](std::string s);
 	Map& GetValue();
 	const Map& GetValue()const;
 	size_t Size()const;
@@ -28,7 +28,7 @@ public:
 
 inline Object::Object():ValueBase(ValueType::Object){}
 
-inline ValueBase** Object::operator[](std::string s){ 
+inline ValueBasePPtr& Object::operator[](std::string s){ 
 	return value_[s];
 }
 
@@ -47,7 +47,7 @@ inline void Object::Dump(std::stringstream &stream,const int indent_num,const in
 		Indent(stream,indent_num,indent_char,indent_level+1);
 		stream << '\"' << it->first << "\" : ";
 
-		const auto tmp = *(it->second);
+		const auto tmp = (*it).second->get();
 		if(tmp == nullptr) stream<<"none";
 		else tmp->Dump(stream, indent_num, indent_char, indent_level+1);
 	}

@@ -7,9 +7,9 @@
 #include "value/null.hpp"
 #include "value/array.hpp"
 #include "value/value_base.hpp"
-#include "value/value_warp.hpp"
 
 #include <array>
+#include <memory>
 #include <string>
 #include <cctype>
 
@@ -29,28 +29,28 @@ std::string ReadStr(R &reader);
 
 
 template <typename R>
-ValueBase* AnyParser(R &reader);
+ValueBasePtr AnyParser(R &reader);
 
 template <typename R>
-Object* ObjectParser(R &reader);
+ValueBasePtr ObjectParser(R &reader);
 
 template <typename R>
-String* StringParser(R &reader);
+ValueBasePtr StringParser(R &reader);
 
 template <typename R>
 long long ReadInteger(R &reader,bool allow_plus=true);
 
 template <typename R>
-Number* NumberParser(R &reader);
+ValueBasePtr NumberParser(R &reader);
 
 template <typename R>
-Bool* BoolParser(R &reader,bool exp);
+ValueBasePtr BoolParser(R &reader,bool exp);
 
 template <typename R>
-Null* NullParser(R &reader);
+ValueBasePtr NullParser(R &reader);
 
 template <typename R>
-Array* ArrayParser(R &reader);
+ValueBasePtr ArrayParser(R &reader);
 
 
 inline int HexToInt(char c){
@@ -97,8 +97,8 @@ std::string ReadStr(R &reader){
 }
 
 template <typename R>
-ValueBase* AnyParser(R &reader){
-	ValueBase *value;
+ValueBasePtr AnyParser(R &reader){
+	ValueBasePtr value;
 	char c = reader.LookVCharF();
 	switch (c) {
 		case 'n': reader.GetChar(); value = NullParser(reader); break;
@@ -114,18 +114,18 @@ ValueBase* AnyParser(R &reader){
 			throw "unknow value type";
 		}
 	}
-	return value;
+	return std::move(value);
 
 }
 
 template <typename R>
-Object* ObjectParser(R &reader){
-	Object* ret = new Object;
-	auto &obj = *ret;
+ValueBasePtr ObjectParser(R &reader){
+	ValueBasePtr ret(new Object());
+	auto &obj = *static_cast<Object*>(ret.get());
 
 	char c;
 	while(reader.GetVChar(c)){
-		if(c == '}') return ret;
+		if(c == '}') return std::move(ret);
 		else if(c == '\"'){
 			do{
 				//parser key
@@ -133,8 +133,7 @@ Object* ObjectParser(R &reader){
 				if(reader.GetVChar() != ':') throw " : should after a key";
 
 				//parser value
-				auto pptr_ = obj[key];
-				delete *pptr_;
+				auto &pptr_ = obj[key];
 				*pptr_ = AnyParser(reader);
 
 				//is more ? 
@@ -151,13 +150,14 @@ Object* ObjectParser(R &reader){
 		}
 	}
 	throw "error when parser a object, all char have been read and do not meet a }";
-	return ret;
+	return std::move(ret);
 }
 
 
 template <typename R>
-String* StringParser(R &reader){
-	return new String(ReadStr(reader));
+ValueBasePtr StringParser(R &reader){
+	String *ret = new String(ReadStr(reader));
+	return std::move(ValueBasePtr(ret));
 }
 
 template <typename R>
@@ -181,7 +181,7 @@ long long ReadInteger(R &reader,bool allow_plus){
 }
 
 template <typename R>
-Number* NumberParser(R &reader){
+ValueBasePtr NumberParser(R &reader){
 	long long int_part = ReadInteger(reader,false);
 	bool neg = int_part < 0;
 	char c = reader.LookChar();
@@ -202,12 +202,13 @@ Number* NumberParser(R &reader){
 		reader.GetChar();
 		pow_ten = std::pow(10,ReadInteger(reader));
 	}
-	return new Number((decimal_part + int_part) * pow_ten);
+	Number *ret = new Number((decimal_part + int_part) * pow_ten);
+	return std::move(ValueBasePtr(ret));
 
 }
 
 template <typename R>
-Bool* BoolParser(R &reader,bool exp){
+ValueBasePtr BoolParser(R &reader,bool exp){
 	static const std::array<char, 3> true_str{'r','u','e'};
 	static const std::array<char, 4> false_str{'a','l','s','e'};
 	char c;
@@ -219,30 +220,32 @@ Bool* BoolParser(R &reader,bool exp){
 		const std::array<char,4> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar(),reader.GetChar()};
 		if(tmp != false_str) throw "strange value type";
 	}
-	return new Bool(exp);
+	Bool *ret = new Bool(exp);
+	return std::move(ValueBasePtr(ret));
 	
 }
 
 template <typename R>
-Null* NullParser(R &reader){
+ValueBasePtr NullParser(R &reader){
 	char c;
 	static const std::array<char,3> null_str{'u','l','l'};
 	const std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
 	if(tmp != null_str) throw "strange value type";
-	return nullptr;
+	return std::move(ValueBasePtr(nullptr));
 }
 
 template <typename R>
-Array* ArrayParser(R &reader){
-	Array *ret = new Array();
-	Array &arr = *ret;
+ValueBasePtr ArrayParser(R &reader){
+	ValueBasePtr ret(new Array());
+	auto &arr = *static_cast<Array*>(ret.get());
 	char c = reader.LookVCharF();
 	while(c != ']'){
-		arr.PushBack(AnyParser(reader));
+		auto tmp = std::make_shared<ValueBasePtr>(AnyParser(reader));
+		arr.PushBack(tmp);
 		c = reader.GetVChar();
 		if(c != ',' && c!=']') throw "strange char in array";
 	}
-	return ret;
+	return std::move(ret);
 }
 
 }
