@@ -3,16 +3,12 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++ build active file",
-            "command": "/usr/bin/g++",
+            "command": "make",
             "args": [
-                "-g",
-                "main.cpp",
-                "-Iinclude/",
-                "-o",
-                "a.out"
+                "-j4"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/build"
             },
             "problemMatcher": [
                 "$gcc"
