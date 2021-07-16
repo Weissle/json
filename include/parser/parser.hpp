@@ -87,7 +87,7 @@ std::string ReadStr(R &reader){
 				case '"': c = '\"'; break;
 				case '/': c = '/'; break;
 				case '\\': c = '\\'; break;
-				case 'u' : break;
+				case 'u' : Read4hex(ret, reader);
 				default: throw "unknow escape character";
 			}
 		}
@@ -137,6 +137,7 @@ ValueBasePtr ObjectParser(R &reader){
 		c = reader.GetVChar();
 		if(c == ','){
 			c = reader.GetVChar();
+			if(c != '\"') throw "a key should after a comma";
 		}
 	}
 	if(c != '}') throw "need the end of object '}'";
