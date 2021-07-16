@@ -41,7 +41,7 @@ template <typename R>
 ValueBasePtr StringParser(R &reader);
 
 template <typename R>
-long long ReadInteger(R &reader);
+double ReadInteger(R &reader);
 
 template <typename R>
 ValueBasePtr NumberParser(R &reader);
@@ -186,10 +186,10 @@ ValueBasePtr StringParser(R &reader){
 
 
 template <typename R>
-long long ReadInteger(R &reader){
+double ReadInteger(R &reader){
 	char c = reader.LookChar();
 	if(isdigit(c)==false) throw "at least one digit";
-	long long ret = 0;
+	double ret = 0;
 	while(isdigit(c)){
 		ret *= 10;
 		ret += c - '0';
@@ -203,7 +203,7 @@ template <typename R>
 ValueBasePtr NumberParser(R &reader){
 	char c;
 	bool neg = false;
-	long long int_part = 0;
+	double num_part = 0;
 	{
 		c = reader.LookVCharF();
 		if(c == '+') throw "now allow char '+' at the beginning of number";
@@ -214,15 +214,16 @@ ValueBasePtr NumberParser(R &reader){
 			c = reader.LookChar();
 			if(isdigit(c)) throw  "number start with digit 0 must is '0'";
 		}
-		else int_part = ReadInteger(reader);
+		else num_part = ReadInteger(reader);
 		
-		if(neg) int_part *= -1;
+		if(neg) num_part *= -1;
 	}
-	long double decimal_part = 0;
+
 
 	{
 		c = reader.LookChar();
 		if (c == '.'){
+			double decimal_part = 0;
 			reader.GetChar();
 			double tmp = 0.1;
 			while (reader.LookChar(c) && isdigit(c)){
@@ -230,12 +231,12 @@ ValueBasePtr NumberParser(R &reader){
 				decimal_part += tmp * (c - '0');
 				tmp *= 0.1;
 			}
-			if (neg)
-				decimal_part *= -1;
+			if (neg) decimal_part *= -1;
+			num_part += decimal_part;
 		}
 	}
 
-	long double pow_ten = 1;
+	double pow_ten = 1;
 	{
 		if(c == 'e' || c == 'E'){
 			reader.MoveNext();
@@ -244,10 +245,18 @@ ValueBasePtr NumberParser(R &reader){
 			if(c=='+' || c=='-') reader.MoveNext();
 			if(c == '-') exp_neg = -1;
 
-			pow_ten = std::pow(10,ReadInteger(reader)*neg);
+			int exp = ReadInteger(reader) * exp_neg;
+			if (std::abs(exp) > 307){
+				int dis = std::abs(exp) - 307;
+				dis *= (exp<0)? -1:1;
+				exp -= dis;
+				num_part *= std::pow(10,dis);
+			}
+
+			pow_ten = std::pow(10,exp);
 		}
 	}
-	Number *ret = new Number((decimal_part + int_part) * pow_ten);
+	Number *ret = new Number((num_part) * pow_ten);
 	return std::move(ValueBasePtr(ret));
 
 }

@@ -61,7 +61,7 @@ public:
 	bool GetBool()const;
 	int GetInteger()const;
 	long long GetLongLong()const;
-	double GetDouble()const;
+	long double GetDouble()const;
 
 	const std::string& GetString()const;
 	const Map& GetObject()const;
@@ -147,7 +147,7 @@ inline long long ValueWarpConst::GetLongLong()const{
 	return STATIC_CAST_TO(Number,pptr).GetValue();
 }
 
-inline double ValueWarpConst::GetDouble()const{
+inline long double ValueWarpConst::GetDouble()const{
 	RightTypeOrThrow(ValueType::Number);
 	return STATIC_CAST_TO(Number,pptr).GetValue();
 }
