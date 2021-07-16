@@ -27,7 +27,7 @@ public:
 
 	constexpr ValueType GetType()const;
 	
-	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
+	void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
 
 };
 
@@ -64,7 +64,7 @@ inline void Number::SetValue(const long double v_){
 //inline void Number::SetValue(const LL v_){ value = v_; isInteger = true;}
 //inline void Number::SetValue(const int v_){ value = v_; isInteger = true;}
 
-inline void Number::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+inline void Number::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
 	// stream.precision(precision);
 	stream << std::setprecision(precision) << value;
 	// stream <<value;

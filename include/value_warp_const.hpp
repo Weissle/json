@@ -74,7 +74,7 @@ public:
 	ArrayConstIterator ArrayBegin()const;
 	ArrayConstIterator ArrayEnd()const;
 
-	void Dump(std::stringstream &stream, const int indent_num=2, const char indent_char=' ')const;
+	void Dump(std::stringstream &stream,const bool pretty=true, const int indent_num=2, const char indent_char=' ')const;
 
 };
 
@@ -199,8 +199,9 @@ inline ValueWarpConst::ArrayConstIterator ValueWarpConst::ArrayEnd()const{
 	return STATIC_CAST_TO(const Array,pptr).GetValue().end();
 }
 
-inline void ValueWarpConst::Dump(std::stringstream &stream, const int indent_num, const char indent_char)const{
-	if(*pptr) (*pptr)->Dump(stream,indent_num,indent_char,0);
+inline void ValueWarpConst::Dump(std::stringstream &stream, bool pretty, const int indent_num, const char indent_char) const{
+	if(pretty == false) (*pptr)->Dump(stream, false, 0, ' ', 0);
+	else (*pptr)->Dump(stream,pretty,indent_num,indent_char,0);
 }
 
 }

@@ -27,7 +27,7 @@ public:
 
 	ValueType GetType()const;
 
-	virtual void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const = 0;
+	virtual void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const = 0;
 
 };
 inline void ValueBase::Indent(std::stringstream &stream,const int indent_num, const char indent_char, const int indent_level)const{
@@ -40,7 +40,7 @@ inline ValueBase::ValueBase(ValueType t):type_(t){}
 
 inline ValueType ValueBase::GetType()const{ return type_; }
 
-inline void ValueBase::Dump(std::stringstream  &stream, const int indent, const int indent_char, const int indent_level)const{ return; }
+inline void ValueBase::Dump(std::stringstream  &stream,const bool pretty, const int indent, const int indent_char, const int indent_level)const{ return; }
 
 using ValueBasePtr = std::unique_ptr<ValueBase>;
 using ValueBasePPtr = SharedNotNullPtr<ValueBasePtr>;

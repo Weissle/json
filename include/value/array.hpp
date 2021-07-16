@@ -22,7 +22,7 @@ public:
 	Vector& GetValue();
 	const Vector& GetValue()const;
 
-	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
+	void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
 	void Resize(int s_);
 	void PushBack(ValueBasePPtr p);
 
@@ -40,16 +40,18 @@ inline ValueBasePPtr& Array::operator[](int idx){
 
 inline size_t Array::Size()const{ return value_.size(); }
 
-inline void Array::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
-	stream << "[\n";
+inline void Array::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
+	stream << "[";
+	if(pretty) stream << '\n';
 	for(auto it=value_.begin(); it!=value_.end();++it){
-		if(it != value_.begin()) stream<<",\n";
+		if(it != value_.begin()) stream<<",";
+		if(pretty) stream << '\n';
 		Indent(stream,indent_num,indent_char,indent_level+1);
 		auto &tmp = *it;
 		if(*tmp == nullptr) stream<<"null";
-		else (*tmp)->Dump(stream, indent_num, indent_char, indent_level+1);
+		else (*tmp)->Dump(stream, pretty,indent_num, indent_char, indent_level+1);
 	}
-	stream << '\n';
+	if(pretty) stream << '\n';
 	Indent(stream,indent_num,indent_char,indent_level);
 	stream << ']';
 	return;

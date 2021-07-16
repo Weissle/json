@@ -22,7 +22,7 @@ public:
 	const Map& GetValue()const;
 	size_t Size()const;
 	void Remove(const std::string s);
-	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
+	void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
 
 };
 
@@ -40,18 +40,20 @@ inline size_t Object::Size()const{
 	return value_.size();
 }
 
-inline void Object::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
-	stream << "{\n";
+inline void Object::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
+	stream << "{";
+	if(pretty) stream<<'\n';
 	for(auto it=value_.begin(); it!=value_.end();++it){
-		if(it != value_.begin()) stream << ",\n";
+		if(it != value_.begin()) stream << ",";
+		if(pretty) stream<<'\n';
 		Indent(stream,indent_num,indent_char,indent_level+1);
-		stream << '\"' << it->first << "\" : ";
+		stream << '\"' << it->first << "\":";
 
 		const auto tmp = (*it).second->get();
-		if(tmp == nullptr) stream<<"none";
-		else tmp->Dump(stream, indent_num, indent_char, indent_level+1);
+		if(tmp == nullptr) stream<<"null";
+		else tmp->Dump(stream, pretty,indent_num, indent_char, indent_level+1);
 	}
-	stream<<'\n';
+	if(pretty)stream<<'\n';
 	Indent(stream,indent_num,indent_char,indent_level);
 	stream<<'}';
 }

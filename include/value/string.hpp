@@ -25,7 +25,7 @@ public:
 	size_t Size()const;
 
 	constexpr ValueType GetType()const;
-	void Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const;
+	void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
 
 	void Print(int _)const;
 };
@@ -48,7 +48,7 @@ inline size_t String::Size()const{ return str.size(); }
 inline void String::Print(int _)const { 
 	std::printf("\"%s\"",str.c_str());
 };
-inline void String::Dump(std::stringstream &stream,const int indent_num,const int indent_char,const int indent_level)const{
+inline void String::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
 	stream <<'\"'<<str<<'\"';
 }
 
