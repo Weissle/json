@@ -17,8 +17,12 @@ namespace wjson {
 
 
 int HexToInt(const char c);
+
 template <typename R>
-void Read4hex(std::string &s,R &reader);
+unsigned ReadHex4(std::string &s,R &reader);
+
+template <typename R>
+void ToUTF8(R &reader);
 
 // The first char of value have been read in all functions below except numberParser.
 // such as string is "<char><char><char>" , when we call functions readStr or stringParser, the first '\"' have benn read. 
@@ -26,7 +30,6 @@ void Read4hex(std::string &s,R &reader);
 
 template <typename R>
 std::string ReadStr(R &reader);
-
 
 template <typename R>
 ValueBasePtr AnyParser(R &reader);
@@ -55,18 +58,47 @@ ValueBasePtr ArrayParser(R &reader);
 
 inline int HexToInt(char c){
 	if(isdigit(c)) return c - '0';
-	c = tolower(c);
-	if(c >='a' && c<='f') return 10+c-'a';
+	else if(c >='a' && c<='f') return 10+c-'a';
+	else if(c >='A' && c<='F') return 10+c-'A';
 	else throw "unknow hex";
 	return 0;
 }
 
 template <typename R>
-void Read4hex(std::string &s,R &reader){
-	const char c1 = (HexToInt(reader.GetChar())<< 4) | HexToInt(reader.GetChar());
-	const char c2 = (HexToInt(reader.GetChar())<< 4) | HexToInt(reader.GetChar());
-	if(c1 != 0 || c2 >= 128)s.push_back(c1);
-	s.push_back(c2);
+unsigned ReadHex4(R &reader){
+	unsigned ret=0;
+	for (int i = 3; i >= 0 ; --i){ 
+		ret |= HexToInt(reader.GetChar()) << (i<<2);
+	}
+	return ret;
+}
+
+template <typename R>
+void ToUTF8(std::string &s,R &reader){
+	unsigned t = ReadHex4(reader);
+	if(t >= 0xD800 && t <= 0xDBFF){
+		if(reader.GetChar()!= '\\' || reader.GetChar()!='u') throw "error when parse unicode";
+		unsigned tmp = ReadHex4(reader);
+		if(tmp < 0xDC00 || tmp > 0xDFFF) throw "error when parse unicode";
+		t = 0x10000 + (t - 0xD800) * 0x400 + (tmp - 0xDC00);
+	}
+	if(t <= 0x7f) s.push_back(t);
+	else if(t <= 0x7ff){
+		s.push_back( (0xc0) | ((t >> 6) & 0x1f) );
+		s.push_back( (0x80) | (t & 0x3f) );
+	}
+	else if((t<=0xd7ff) || (t >=0xE000 && t <= 0xFFFF)){
+		s.push_back( 0xe0 | ((t>>12) & 0xf) );
+		s.push_back( 0x80 | ((t>>6) & 0x3f) );
+		s.push_back( 0x80 | (t & 0x3f) );
+	}
+	else if(t >= 0x10000 && t <= 0x10FFFF){
+		s.push_back( 0xF0 | ((t>>18) & 0x7) );
+		s.push_back( 0x80 | ((t>>12) & 0x3f) );
+		s.push_back( 0x80 | ((t>>6) & 0x3f) );
+		s.push_back( 0x80 | (t & 0x3f) );
+	}
+	else throw "error when parse unicode";
 }
 
 template <typename R>
@@ -87,7 +119,7 @@ std::string ReadStr(R &reader){
 				case '"': c = '\"'; break;
 				case '/': c = '/'; break;
 				case '\\': c = '\\'; break;
-				case 'u' : c = 0; Read4hex(ret, reader); break;
+				case 'u' : c = 0; ToUTF8(ret, reader); break;
 				default: throw "unknow escape character";
 			}
 			if(c) ret.push_back(c);
