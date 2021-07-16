@@ -65,7 +65,7 @@ template <typename R>
 void Read4hex(std::string &s,R &reader){
 	const char c1 = (HexToInt(reader.GetChar())<< 4) | HexToInt(reader.GetChar());
 	const char c2 = (HexToInt(reader.GetChar())<< 4) | HexToInt(reader.GetChar());
-	s.push_back(c1);
+	if(c1 != 0 || c2 >= 128)s.push_back(c1);
 	s.push_back(c2);
 }
 
@@ -87,11 +87,12 @@ std::string ReadStr(R &reader){
 				case '"': c = '\"'; break;
 				case '/': c = '/'; break;
 				case '\\': c = '\\'; break;
-				case 'u' : Read4hex(ret, reader);
+				case 'u' : c = 0; Read4hex(ret, reader); break;
 				default: throw "unknow escape character";
 			}
+			if(c) ret.push_back(c);
 		}
-		ret.push_back(c);
+		else ret.push_back(c);
 	}
 	throw "error when read a string, all char have been read and do not meet a \"";
 	return ret;
@@ -169,10 +170,10 @@ long long ReadInteger(R &reader){
 template <typename R>
 ValueBasePtr NumberParser(R &reader){
 	char c;
+	bool neg = false;
 	long long int_part = 0;
 	{
 		c = reader.LookVCharF();
-		bool neg = false;
 		if(c == '+') throw "now allow char '+' at the beginning of number";
 		else if(c == '-') {neg = true; reader.MoveNext(); c = reader.LookChar();}
 
@@ -190,7 +191,6 @@ ValueBasePtr NumberParser(R &reader){
 	{
 		c = reader.LookChar();
 		if (c == '.'){
-			bool neg = int_part < 0;
 			reader.GetChar();
 			double tmp = 0.1;
 			while (reader.LookChar(c) && isdigit(c)){
@@ -208,9 +208,9 @@ ValueBasePtr NumberParser(R &reader){
 		if(c == 'e' || c == 'E'){
 			reader.MoveNext();
 			c = reader.LookChar();
-			int neg = 1;
+			int exp_neg = 1;
 			if(c=='+' || c=='-') reader.MoveNext();
-			if(c == '-') neg = -1;
+			if(c == '-') exp_neg = -1;
 
 			pow_ten = std::pow(10,ReadInteger(reader)*neg);
 		}
