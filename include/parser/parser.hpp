@@ -38,7 +38,7 @@ template <typename R>
 ValueBasePtr StringParser(R &reader);
 
 template <typename R>
-long long ReadInteger(R &reader,bool allow_plus=true);
+long long ReadInteger(R &reader);
 
 template <typename R>
 ValueBasePtr NumberParser(R &reader);
@@ -164,47 +164,69 @@ ValueBasePtr StringParser(R &reader){
 	return std::move(ValueBasePtr(ret));
 }
 
+
 template <typename R>
-long long ReadInteger(R &reader,bool allow_plus){
-	char c = reader.GetVChar();
-	if(c == '+' && allow_plus == false) throw "now allow char '+' at the beginning of number";
-	bool neg = (c == '-');
-	long long num = 0;
-	if(c != '-' && c!='+'){
-		if(isdigit(c) == false) throw "error when parser a number, should start with - or digit";
-		else num = c-'0';
+long long ReadInteger(R &reader){
+	char c = reader.LookChar();
+	if(isdigit(c)==false) throw "at least one digit";
+	long long ret = 0;
+	while(isdigit(c)){
+		ret *= 10;
+		ret += c - '0';
+		reader.MoveNext();
+		c = reader.LookChar();
 	}
-	if(c == '0' && isdigit(reader.LookChar())) throw "number start with digit 0 must is 0";
-	while(isdigit(reader.LookChar())){
-		c = reader.GetChar();
-		num *= 10;
-		num += c - '0';
-	}
-	if(neg) num *= -1;
-	return num;
+	return ret;
 }
 
 template <typename R>
 ValueBasePtr NumberParser(R &reader){
-	long long int_part = ReadInteger(reader,false);
-	bool neg = int_part < 0;
-	char c = reader.LookChar();
+	char c;
+	long long int_part = 0;
+	{
+		c = reader.LookVCharF();
+		bool neg = false;
+		if(c == '+') throw "now allow char '+' at the beginning of number";
+		else if(c == '-') {neg = true; reader.MoveNext(); c = reader.LookChar();}
 
-	long double decimal_part = 0;
-	if(c == '.'){
-		reader.GetChar();
-		double tmp = 0.1;
-		while(reader.LookChar(c) && isdigit(c)){
-			reader.GetChar();
-			decimal_part += tmp * (c - '0');
-			tmp *= 0.1;
+		if(c == '0'){
+			reader.MoveNext();
+			c = reader.LookChar();
+			if(isdigit(c)) throw  "number start with digit 0 must is '0'";
 		}
-		if(neg) decimal_part *= -1;
+		else int_part = ReadInteger(reader);
+		
+		if(neg) int_part *= -1;
 	}
+	long double decimal_part = 0;
+
+	{
+		c = reader.LookChar();
+		if (c == '.'){
+			bool neg = int_part < 0;
+			reader.GetChar();
+			double tmp = 0.1;
+			while (reader.LookChar(c) && isdigit(c)){
+				reader.GetChar();
+				decimal_part += tmp * (c - '0');
+				tmp *= 0.1;
+			}
+			if (neg)
+				decimal_part *= -1;
+		}
+	}
+
 	long double pow_ten = 1;
-	if(c == 'e' || c == 'E'){
-		reader.GetChar();
-		pow_ten = std::pow(10,ReadInteger(reader));
+	{
+		if(c == 'e' || c == 'E'){
+			reader.MoveNext();
+			c = reader.LookChar();
+			int neg = 1;
+			if(c=='+' || c=='-') reader.MoveNext();
+			if(c == '-') neg = -1;
+
+			pow_ten = std::pow(10,ReadInteger(reader)*neg);
+		}
 	}
 	Number *ret = new Number((decimal_part + int_part) * pow_ten);
 	return std::move(ValueBasePtr(ret));

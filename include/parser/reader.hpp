@@ -44,7 +44,7 @@ class CharPtrReader : ReaderInterface{
 	int idx;
 public:
 	CharPtrReader(const char *p_);
-
+	void MoveNext();
 
 	bool LookChar(char &c)const;
 	char LookChar()const;
@@ -56,6 +56,7 @@ public:
 	char GetVChar();
 
 };
+inline void CharPtrReader::MoveNext(){ ++idx; }
 
 inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),idx(0){}
 
