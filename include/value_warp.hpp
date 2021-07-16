@@ -284,11 +284,8 @@ inline void ValueWarp::ParseAny(const std::string s){
 
 inline void ValueWarp::ParseAny(CharPtrReader &reader){
 	*pptr = nullptr;
-	try{
-		*pptr = AnyParser(reader);
-	}catch(std::exception e){
-		std::cout<<e.what()<<std::endl;
-	}
+	*pptr = AnyParser(reader);
+	if(reader.GetVChar() != '\0') throw "unexpected char";
 }
 
 }
