@@ -75,6 +75,7 @@ std::string ReadStr(R &reader){
 	char c;
 	while(reader.GetChar(c)){
 		if(c == '\"') return ret;
+		else if(isspace(c) && c != ' ') throw "not allow space except ' ',please use escape char";
 		else if( c == '\\' ){
 			char tmp = reader.GetChar();
 			switch (tmp) {
@@ -122,38 +123,23 @@ template <typename R>
 ValueBasePtr ObjectParser(R &reader){
 	ValueBasePtr ret(new Object());
 	auto &obj = *static_cast<Object*>(ret.get());
-
 	char c = reader.GetVChar();
-	if(c == '}') return std::move(ret);
-	else if(c == ',') {
-		if(reader.GetVChar(c) == '}') return std::move(ret);
-		else throw "If the first char in object is comma, the object should be empty";
-	}
-	else if(c == '\"'){
-		do{
-			//parser key
-			std::string key = ReadStr(reader);
-			if(reader.GetVChar() != ':') throw " : should after a key";
+	while(c == '\"'){
+		//parser key
+		std::string key = ReadStr(reader);
+		if(reader.GetVChar() != ':') throw " : should after a key";
 
-			//parser value
-			auto &pptr_ = obj[key];
-			*pptr_ = AnyParser(reader);
+		//parser value
+		auto &pptr_ = obj[key];
+		*pptr_ = AnyParser(reader);
 
-			//is more ? 
+		//is more ? 
+		c = reader.GetVChar();
+		if(c == ','){
 			c = reader.GetVChar();
-			if(c == ','){
-				c = reader.GetVChar();
-				if(c == '}')break;
-				else if(c=='\"') continue;
-				else throw "error occur.";
-			}
-			else if (c == '}') break;
-			else throw "error occur.";
-		}while(true);
+		}
 	}
-	else {
-		throw "A object's key should start with \"";
-	}
+	if(c != '}') throw "need the end of object '}'";
 	return std::move(ret);
 }
 
@@ -280,8 +266,11 @@ ValueBasePtr ArrayParser(R &reader){
 		auto tmp = std::make_shared<ValueBasePtr>(AnyParser(reader));
 		arr.PushBack(tmp);
 		c = reader.GetVChar();
-		if(c == ',' && reader.LookVCharF() != ']') continue;
-		else if(c == ']') break;
+		if(c == ']') break;
+		else if(c == ','){
+			if(reader.LookVCharF() == ']') break;
+		}
+		else throw "error, expect , or ]";
 	}
 	return std::move(ret);
 }
