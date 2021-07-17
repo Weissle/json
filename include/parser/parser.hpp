@@ -8,7 +8,6 @@
 #include "value/array.hpp"
 #include "value/value_base.hpp"
 
-#include <array>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -213,16 +212,11 @@ ValueBasePtr NumberParser(R &reader){
 
 template <typename R>
 ValueBasePtr BoolParser(R &reader,bool exp){
-	static const std::array<char, 3> true_str{'r','u','e'};
-	static const std::array<char, 4> false_str{'a','l','s','e'};
-	char c;
 	if(exp){
-		const std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
-		if(tmp != true_str) throw "strange value type";
+		if( reader.GetChar() != 'r' || reader.GetChar() != 'u' || reader.GetChar() != 'e' ) throw "strange value type";
 	}
 	else{
-		const std::array<char,4> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar(),reader.GetChar()};
-		if(tmp != false_str) throw "strange value type";
+		if( reader.GetChar() != 'a' || reader.GetChar() != 'l' || reader.GetChar() != 's' ||reader.GetChar() != 'e' ) throw "strange value type";
 	}
 	Bool *ret = new Bool(exp);
 	return std::move(ValueBasePtr(ret));
@@ -231,10 +225,7 @@ ValueBasePtr BoolParser(R &reader,bool exp){
 
 template <typename R>
 ValueBasePtr NullParser(R &reader){
-	char c;
-	static const std::array<char,3> null_str{'u','l','l'};
-	const std::array<char,3> tmp{reader.GetChar(),reader.GetChar(),reader.GetChar()};
-	if(tmp != null_str) throw "strange value type";
+	if( reader.GetChar() != 'u' || reader.GetChar() != 'l' || reader.GetChar() != 'l' ) throw "strange value type";
 	return std::move(ValueBasePtr(nullptr));
 }
 
@@ -243,27 +234,15 @@ ValueBasePtr ArrayParser(R &reader){
 	ValueBasePtr ret(new Array());
 	auto &arr = *static_cast<Array*>(ret.get());
 	char c = reader.LookVCharF();
-	if(c == ']'){
-		reader.MoveNext();
-		return std::move(ret);
-	}
-	else if(c == ',') {
-		reader.MoveNext();
-		if(reader.GetVChar() != ']'){
-			throw "A array have only one comma should be empty";
-		}
-		return std::move(ret);
-	}
-	while(c != ']'){
+	if(c == ']') {reader.MoveNext(); return std::move(ret);}
+	do{
 		auto tmp = std::make_shared<ValueBasePtr>(AnyParser(reader));
 		arr.PushBack(tmp);
 		c = reader.GetVChar();
 		if(c == ']') break;
-		else if(c == ','){
-			if(reader.LookVCharF() == ']') break;
-		}
+		else if(c == ',') continue;
 		else throw "error, expect , or ]";
-	}
+	}while(c != ']');
 	return std::move(ret);
 }
 
