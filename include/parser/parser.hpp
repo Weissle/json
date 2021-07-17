@@ -9,6 +9,7 @@
 #include "value/value_base.hpp"
 
 #include <array>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <cctype>
@@ -39,9 +40,6 @@ ValueBasePtr ObjectParser(R &reader);
 
 template <typename R>
 ValueBasePtr StringParser(R &reader);
-
-template <typename R>
-double ReadInteger(R &reader);
 
 template <typename R>
 ValueBasePtr NumberParser(R &reader);
@@ -135,18 +133,16 @@ ValueBasePtr AnyParser(R &reader){
 	ValueBasePtr value;
 	char c = reader.LookVCharF();
 	switch (c) {
-		case 'n': reader.GetChar(); value = NullParser(reader); break;
-		case 't': reader.GetChar(); value = BoolParser(reader,true); break;
-		case 'f': reader.GetChar(); value = BoolParser(reader,false); break;
-		case '\"': reader.GetChar(); value = StringParser(reader); break;
-		case '{': reader.GetChar(); value = ObjectParser(reader); break;
-		case '[': reader.GetChar(); value = ArrayParser(reader); break;
+		case 'n': reader.MoveNext(); value = NullParser(reader); break;
+		case 't': reader.MoveNext(); value = BoolParser(reader,true); break;
+		case 'f': reader.MoveNext(); value = BoolParser(reader,false); break;
+		case '\"': reader.MoveNext(); value = StringParser(reader); break;
+		case '{': reader.MoveNext(); value = ObjectParser(reader); break;
+		case '[': reader.MoveNext(); value = ArrayParser(reader); break;
 		case '\0': throw "there is no value for this key?";
-		default: try {
-			value = NumberParser(reader);
-		} catch (std::exception e) {
-			throw "unknow value type";
-		}
+		default: 
+			if(c == '-' || std::isdigit(c)) value = NumberParser(reader);
+			else throw "unknow value type";
 	}
 	return std::move(value);
 
@@ -185,78 +181,32 @@ ValueBasePtr StringParser(R &reader){
 }
 
 
-template <typename R>
-double ReadInteger(R &reader){
-	char c = reader.LookChar();
-	if(isdigit(c)==false) throw "at least one digit";
-	double ret = 0;
-	while(isdigit(c)){
-		ret *= 10;
-		ret += c - '0';
-		reader.MoveNext();
-		c = reader.LookChar();
-	}
-	return ret;
-}
 
 template <typename R>
 ValueBasePtr NumberParser(R &reader){
-	char c;
-	bool neg = false;
-	double num_part = 0;
+	//Check number is valid
+	const char *ptr = reader.GetPtr();
 	{
-		c = reader.LookVCharF();
-		if(c == '+') throw "now allow char '+' at the beginning of number";
-		else if(c == '-') {neg = true; reader.MoveNext(); c = reader.LookChar();}
+		char c = reader.GetChar();
+		if(c == '-') c = reader.GetChar();
+		if(isdigit(c) == false) throw "interger part should have at least one digit";
+		if(c == '0' && isdigit(reader.LookChar())) throw "if interger part is 0, it should be one 0";
+		while(isdigit(c = reader.LookChar())) reader.MoveNext();
 
-		if(c == '0'){
+		if(c == '.') {
 			reader.MoveNext();
-			c = reader.LookChar();
-			if(isdigit(c)) throw  "number start with digit 0 must is '0'";
+			while(isdigit(c = reader.LookChar())) reader.MoveNext();
 		}
-		else num_part = ReadInteger(reader);
-		
-		if(neg) num_part *= -1;
-	}
-
-
-	{
-		c = reader.LookChar();
-		if (c == '.'){
-			double decimal_part = 0;
-			reader.GetChar();
-			double tmp = 0.1;
-			while (reader.LookChar(c) && isdigit(c)){
-				reader.GetChar();
-				decimal_part += tmp * (c - '0');
-				tmp *= 0.1;
-			}
-			if (neg) decimal_part *= -1;
-			num_part += decimal_part;
-		}
-	}
-
-	double pow_ten = 1;
-	{
-		if(c == 'e' || c == 'E'){
+		if(c == 'e' || c =='E'){
 			reader.MoveNext();
-			c = reader.LookChar();
-			int exp_neg = 1;
-			if(c=='+' || c=='-') reader.MoveNext();
-			if(c == '-') exp_neg = -1;
-
-			int exp = ReadInteger(reader) * exp_neg;
-			if (std::abs(exp) > 307){
-				int dis = std::abs(exp) - 307;
-				dis *= (exp<0)? -1:1;
-				exp -= dis;
-				num_part *= std::pow(10,dis);
-			}
-
-			pow_ten = std::pow(10,exp);
+			c = reader.GetChar();
+			if(c == '-' || c == '+') c = reader.GetChar();
+			if(!isdigit(c)) throw "at least one digit should after e or E";
+			while(isdigit(c = reader.LookChar())) reader.MoveNext();
 		}
 	}
-	Number *ret = new Number((num_part) * pow_ten);
+	const double num = strtod(ptr, nullptr);
+	Number *ret = new Number(num,ptr,reader.GetPtr());
 	return std::move(ValueBasePtr(ret));
 
 }
@@ -294,11 +244,11 @@ ValueBasePtr ArrayParser(R &reader){
 	auto &arr = *static_cast<Array*>(ret.get());
 	char c = reader.LookVCharF();
 	if(c == ']'){
-		reader.GetChar();
+		reader.MoveNext();
 		return std::move(ret);
 	}
 	else if(c == ',') {
-		reader.GetChar();
+		reader.MoveNext();
 		if(reader.GetVChar() != ']'){
 			throw "A array have only one comma should be empty";
 		}

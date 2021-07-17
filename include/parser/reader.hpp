@@ -41,10 +41,12 @@ public:
 
 class CharPtrReader : ReaderInterface{
 	const char *ptr;
-	int idx;
+	const char *ori;
 public:
 	CharPtrReader(const char *p_);
 	void MoveNext();
+	const char * GetPtr()const;
+	int GetIdx()const;
 
 	bool LookChar(char &c)const;
 	char LookChar()const;
@@ -56,24 +58,28 @@ public:
 	char GetVChar();
 
 };
-inline void CharPtrReader::MoveNext(){ ++idx; }
+inline void CharPtrReader::MoveNext(){ ++ptr; }
 
-inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),idx(0){}
+inline CharPtrReader::CharPtrReader(const char *p_):ptr(p_),ori(p_){}
+
+inline const char * CharPtrReader::GetPtr()const{ return ptr; }
+
+inline int CharPtrReader::GetIdx()const{ return ptr - ori; }
 
 
 // return true means c is not '\0'
 inline bool CharPtrReader::LookChar(char &c)const{
-	c = *(ptr+idx);
+	c = *ptr;
 	if(c == 0) return false;
 	else return true;
 }
 
 inline char CharPtrReader::LookChar()const{
-	return *(ptr+idx);
+	return *ptr;
 }
 
 inline bool CharPtrReader::LookVCharF(char &c){
-	while(LookChar(c) && isspace(c)) ++idx;
+	while(LookChar(c) && isspace(c)) ++ptr;
 	return c !='\0';
 }
 
@@ -85,7 +91,7 @@ inline char CharPtrReader::LookVCharF(){
 
 inline bool CharPtrReader::GetChar(char &c){
 	bool tmp = LookChar(c);
-	if(tmp) { ++idx; return true; }
+	if(tmp) { ++ptr; return true; }
 	else return false;
 }
 
@@ -97,7 +103,7 @@ inline char CharPtrReader::GetChar(){
 
 inline bool CharPtrReader::GetVChar(char &c){
 	c = LookVCharF();
-	if(c) ++idx;
+	if(c) ++ptr;
 	return c != '\0';
 }
 

@@ -14,9 +14,10 @@ using LL = long long;
 class Number : public ValueBase{
 
 	double value;
+	std::string origin;
 public:
 	Number();
-	Number(double v);
+	Number(double v,const char* ori_begin,const char* ori_end);
 
 	double GetValue()const;
 	void SetValue(const double v_);
@@ -27,9 +28,13 @@ public:
 
 };
 
-inline Number::Number():Number(0){}
+inline Number::Number():Number(0,nullptr,nullptr){}
 
-inline Number::Number(double v):ValueBase(ValueType::Number),value(v){}
+inline Number::Number(double v,const char* ori_begin,const char* ori_end):ValueBase(ValueType::Number),value(v){
+	if(ori_begin && ori_end){
+		origin.assign(ori_begin,ori_end);
+	}
+}
 
 inline double Number::GetValue()const{ return value; }
 
@@ -38,7 +43,8 @@ inline void Number::SetValue(const double v_){
 }
 
 inline void Number::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
-	stream <<value;
+	if(origin.size()) stream << origin;
+	else stream << value;
 }
 
 }
