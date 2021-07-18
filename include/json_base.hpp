@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <sstream>
 #include <variant>
+#include <iostream>
 
 #include "value/number.hpp"
 
@@ -31,6 +32,7 @@ using ObjectConstIterator = typename Object::const_iterator;
 using ArrayConstIterator = typename Array::const_iterator;
 using ObjectIterator = typename Object::iterator;
 using ArrayIterator = typename Array::iterator;
+
 
 class JsonBase{
 protected:
@@ -98,6 +100,12 @@ public:
 	JsonBase(const std::string &s){ value_.emplace<String>(s); }
 
 	JsonBase(ValueType _type);
+	~JsonBase(){ 
+		// static int release_count = 0;
+		// release_count++;
+		// if(release_count % 1000 == 0) 
+		// std::cout<<"release : "<<release_count<<std::endl; 
+	}
 
 	ValueType GetType()const { return (ValueType)value_.index(); }
 
@@ -128,11 +136,14 @@ public:
 	template<class T>
 	T& Get();
 
-	JsonBase& operator[](const std::string s){ 
+	JsonBase& operator[](const std::string &s){ 
 		if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
 		return Get<Object>()[s];
 	}
-	void Remove(const std::string s){ Get<Object>().erase(s); }
+	void Insert(const std::string &s,JsonBase j){
+		Get<Object>().insert_or_assign(s,j);
+	}
+	void Remove(const std::string &s){ Get<Object>().erase(s); }
 
 	JsonBase& operator[](const int idx){ return Get<Array>()[idx]; }
 	void Resize(int s){ Get<Array>().resize(s); }
@@ -169,7 +180,7 @@ public:
 
 public:
 	size_t Size()const;
-	void Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
+	void Dump(std::stringstream &stream,const bool pretty=true,const int indent_num=4,const int indent_char=' ',const int indent_level=0)const;
 };
 
 inline JsonBase::JsonBase(ValueType _type){
@@ -223,5 +234,6 @@ inline void JsonBase::Dump(std::stringstream &stream,const bool pretty,const int
 		case (int)ValueType::Array: Dump(stream,Get<Array>(),pretty,indent_num,indent_char,indent_level); break;
 	}
 }
+
 
 }
