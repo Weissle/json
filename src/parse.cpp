@@ -1,12 +1,8 @@
-#pragma once
-
-#include "value/object.hpp"
-#include "value/string.hpp"
 #include "value/number.hpp"
-#include "value/bool.hpp"
-#include "value/null.hpp"
-#include "value/array.hpp"
 #include "value/value_base.hpp"
+#include "parser/reader.hpp"
+#include "parser/parse.hpp"
+
 
 #include <cstdlib>
 #include <memory>
@@ -14,43 +10,6 @@
 #include <cctype>
 
 namespace wjson {
-
-
-int HexToInt(const char c);
-
-template <typename R>
-unsigned ReadHex4(std::string &s,R &reader);
-
-template <typename R>
-void ToUTF8(R &reader);
-
-// The first char of value have been read in all functions below except numberParser.
-// such as string is "<char><char><char>" , when we call functions readStr or stringParser, the first '\"' have benn read. 
-// Thus it will get <char><char><char>" and finish it's work when it meet '\"'.
-
-template <typename R>
-std::string ReadStr(R &reader);
-
-template <typename R>
-ValueBasePtr AnyParser(R &reader);
-
-template <typename R>
-ValueBasePtr ObjectParser(R &reader);
-
-template <typename R>
-ValueBasePtr StringParser(R &reader);
-
-template <typename R>
-ValueBasePtr NumberParser(R &reader);
-
-template <typename R>
-ValueBasePtr BoolParser(R &reader,bool exp);
-
-template <typename R>
-ValueBasePtr NullParser(R &reader);
-
-template <typename R>
-ValueBasePtr ArrayParser(R &reader);
 
 
 inline int HexToInt(char c){
@@ -61,8 +20,7 @@ inline int HexToInt(char c){
 	return 0;
 }
 
-template <typename R>
-unsigned ReadHex4(R &reader){
+unsigned ReadHex4(Reader &reader){
 	unsigned ret=0;
 	for (int i = 3; i >= 0 ; --i){ 
 		ret |= HexToInt(reader.GetChar()) << (i<<2);
@@ -70,8 +28,7 @@ unsigned ReadHex4(R &reader){
 	return ret;
 }
 
-template <typename R>
-void ToUTF8(std::string &s,R &reader){
+void ToUTF8(std::string &s,Reader &reader){
 	unsigned t = ReadHex4(reader);
 	if(t >= 0xD800 && t <= 0xDBFF){
 		if(reader.GetChar()!= '\\' || reader.GetChar()!='u') throw "error when parse unicode";
@@ -98,8 +55,7 @@ void ToUTF8(std::string &s,R &reader){
 	else throw "error when parse unicode";
 }
 
-template <typename R>
-std::string ReadStr(R &reader){
+std::string ReadStr(Reader &reader){
 	std::string ret;
 	char c;
 	while(reader.GetChar(c)){
@@ -127,30 +83,36 @@ std::string ReadStr(R &reader){
 	return ret;
 }
 
-template <typename R>
-ValueBasePtr AnyParser(R &reader){
-	ValueBasePtr value;
+JsonBase Parse(const std::string &s){
+	return std::move(Parse(s.c_str()));
+}
+
+JsonBase Parse(const char* ptr){
+	Reader reader(ptr);
+	return std::move(Parse(reader));
+}
+
+JsonBase Parse(Reader &reader){
+	JsonBase value;
 	char c = reader.LookVCharF();
 	switch (c) {
-		case 'n': reader.MoveNext(); value = NullParser(reader); break;
-		case 't': reader.MoveNext(); value = BoolParser(reader,true); break;
-		case 'f': reader.MoveNext(); value = BoolParser(reader,false); break;
-		case '\"': reader.MoveNext(); value = StringParser(reader); break;
-		case '{': reader.MoveNext(); value = ObjectParser(reader); break;
-		case '[': reader.MoveNext(); value = ArrayParser(reader); break;
+		case 'n': reader.MoveNext(); value = NullParse(reader); break;
+		case 't': reader.MoveNext(); value = BoolParse(reader,true); break;
+		case 'f': reader.MoveNext(); value = BoolParse(reader,false); break;
+		case '\"': reader.MoveNext(); value = StringParse(reader); break;
+		case '{': reader.MoveNext(); value = ObjectParse(reader); break;
+		case '[': reader.MoveNext(); value = ArrayParse(reader); break;
 		case '\0': throw "there is no value for this key?";
 		default: 
-			if(c == '-' || std::isdigit(c)) value = NumberParser(reader);
+			if(c == '-' || std::isdigit(c)) value = NumberParse(reader);
 			else throw "unknow value type";
 	}
 	return std::move(value);
 
 }
 
-template <typename R>
-ValueBasePtr ObjectParser(R &reader){
-	ValueBasePtr ret(new Object());
-	auto &obj = *static_cast<Object*>(ret.get());
+JsonBase ObjectParse(Reader &reader){
+	JsonBase ret(ValueType::Object);
 	char c = reader.GetVChar();
 	while(c == '\"'){
 		//parser key
@@ -158,8 +120,7 @@ ValueBasePtr ObjectParser(R &reader){
 		if(reader.GetVChar() != ':') throw " : should after a key";
 
 		//parser value
-		auto &pptr_ = obj[key];
-		*pptr_ = AnyParser(reader);
+		ret[key] = std::move(Parse(reader));
 
 		//is more ? 
 		c = reader.GetVChar();
@@ -173,16 +134,13 @@ ValueBasePtr ObjectParser(R &reader){
 }
 
 
-template <typename R>
-ValueBasePtr StringParser(R &reader){
-	String *ret = new String(ReadStr(reader));
-	return std::move(ValueBasePtr(ret));
+JsonBase StringParse(Reader &reader){
+	return std::move(JsonBase(ReadStr(reader)));
 }
 
 
 
-template <typename R>
-ValueBasePtr NumberParser(R &reader){
+JsonBase NumberParse(Reader &reader){
 	//Check number is valid
 	const char *ptr = reader.GetPtr();
 	{
@@ -205,13 +163,12 @@ ValueBasePtr NumberParser(R &reader){
 		}
 	}
 	const double num = strtod(ptr, nullptr);
-	Number *ret = new Number(num,ptr,reader.GetPtr());
-	return std::move(ValueBasePtr(ret));
+
+	return std::move(JsonBase(num,ptr,reader.GetPtr()));
 
 }
 
-template <typename R>
-ValueBasePtr BoolParser(R &reader,bool exp){
+JsonBase BoolParse(Reader &reader,bool exp){
 	if(exp){
 		if( reader.GetChar() != 'r' || reader.GetChar() != 'u' || reader.GetChar() != 'e' ) throw "strange value type";
 	}
@@ -219,25 +176,21 @@ ValueBasePtr BoolParser(R &reader,bool exp){
 		if( reader.GetChar() != 'a' || reader.GetChar() != 'l' || reader.GetChar() != 's' ||reader.GetChar() != 'e' ) throw "strange value type";
 	}
 	Bool *ret = new Bool(exp);
-	return std::move(ValueBasePtr(ret));
+	return std::move(JsonBase(exp));
 	
 }
 
-template <typename R>
-ValueBasePtr NullParser(R &reader){
+JsonBase NullParse(Reader &reader){
 	if( reader.GetChar() != 'u' || reader.GetChar() != 'l' || reader.GetChar() != 'l' ) throw "strange value type";
-	return std::move(ValueBasePtr(nullptr));
+	return std::move(JsonBase(nullptr));
 }
 
-template <typename R>
-ValueBasePtr ArrayParser(R &reader){
-	ValueBasePtr ret(new Array());
-	auto &arr = *static_cast<Array*>(ret.get());
+JsonBase ArrayParse(Reader &reader){
+	JsonBase ret(ValueType::Array);
 	char c = reader.LookVCharF();
 	if(c == ']') {reader.MoveNext(); return std::move(ret);}
 	do{
-		auto tmp = std::make_shared<ValueBasePtr>(AnyParser(reader));
-		arr.PushBack(tmp);
+		ret.PushBack(Parse(reader));
 		c = reader.GetVChar();
 		if(c == ']') break;
 		else if(c == ',') continue;
