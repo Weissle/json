@@ -1,8 +1,8 @@
 #pragma once
 
 #include "value/number.hpp"
-#include "value/value_base.hpp"
-#include "parser/reader.hpp"
+#include "json_base.hpp"
+#include "parse/reader.hpp"
 
 
 #include <cstdlib>
