@@ -9,7 +9,6 @@
 #include <string>
 #include <cctype>
 #include <iostream>
-
 namespace wjson {
 
 
@@ -94,7 +93,6 @@ void Parse(const char* ptr,JsonBase &ret){
 }
 
 void Parse(Reader &reader,JsonBase &ret){
-	JsonBase value;
 	char c = reader.LookVCharF();
 	switch (c) {
 		case 'n': reader.MoveNext(); NullParse(reader,ret); break;
@@ -173,8 +171,8 @@ void NumberParse(Reader &reader,JsonBase &ret){
 		}
 	}
 	const double num = strtod(ptr, nullptr);
-	
-	ret = std::move(JsonBase(num,ptr,reader.GetPtr()));
+	ret.To<Number>();
+	ret.Get<Number>() = Number(num,ptr,reader.GetPtr());
 
 }
 
