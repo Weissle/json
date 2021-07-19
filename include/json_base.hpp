@@ -47,7 +47,7 @@ protected:
 	}
 
 	void Dump(std::stringstream &stream,const std::string &s)const{
-		stream << s;
+		stream << '\"' << s << '\"';
 	}
 
 	void Dump(std::stringstream &stream,const Array &arr,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
@@ -81,6 +81,8 @@ protected:
 				stream << '\n';
 				Indent(stream,indent_num,indent_char,indent_level+1);
 			}
+			Dump(stream,it->first);
+			stream<<':';
 			(it->second).Dump(stream,pretty,indent_num,indent_char,indent_level+1);
 		}
 		if(pretty) {
