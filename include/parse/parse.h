@@ -25,22 +25,28 @@ void ToUTF8(Reader &reader);
 
 std::string ReadStr(Reader &reader);
 
+void Parse(const std::string &s,JsonBase &ret);
+
+void Parse(const char* ptr,JsonBase &ret);
+
+void Parse(Reader &reader,JsonBase &ret);
+
 JsonBase Parse(const std::string &s);
 
 JsonBase Parse(const char* ptr);
 
 JsonBase Parse(Reader &reader);
 
-JsonBase ObjectParse(Reader &reader);
+void ObjectParse(Reader &reader,JsonBase &ret);
 
-JsonBase StringParse(Reader &reader);
+void StringParse(Reader &reader,JsonBase &ret);
 
-JsonBase NumberParse(Reader &reader);
+void NumberParse(Reader &reader,JsonBase &ret);
 
-JsonBase BoolParse(Reader &reader,bool exp);
+void BoolParse(Reader &reader,bool exp,JsonBase &ret);
 
-JsonBase NullParse(Reader &reader);
+void NullParse(Reader &reader,JsonBase &ret);
 
-JsonBase ArrayParse(Reader &reader);
+void ArrayParse(Reader &reader,JsonBase &ret);
 
 }

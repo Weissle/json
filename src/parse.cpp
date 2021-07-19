@@ -12,7 +12,7 @@
 namespace wjson {
 
 
-inline int HexToInt(char c){
+int HexToInt(char c){
 	if(isdigit(c)) return c - '0';
 	else if(c >='a' && c<='f') return 10+c-'a';
 	else if(c >='A' && c<='F') return 10+c-'A';
@@ -83,36 +83,47 @@ std::string ReadStr(Reader &reader){
 	return ret;
 }
 
+void Parse(const std::string &s,JsonBase &ret){
+	Parse(s.c_str(),ret);
+}
+
+void Parse(const char* ptr,JsonBase &ret){
+	Reader reader(ptr);
+	Parse(reader,ret);
+}
+
+void Parse(Reader &reader,JsonBase &ret){
+	JsonBase value;
+	char c = reader.LookVCharF();
+	switch (c) {
+		case 'n': reader.MoveNext(); NullParse(reader,ret); break;
+		case 't': reader.MoveNext(); BoolParse(reader,true,ret); break;
+		case 'f': reader.MoveNext(); BoolParse(reader,false,ret); break;
+		case '\"': reader.MoveNext(); StringParse(reader,ret); break;
+		case '{': reader.MoveNext(); ObjectParse(reader,ret); break;
+		case '[': reader.MoveNext(); ArrayParse(reader,ret); break;
+		case '\0': throw "there is no value for this key?";
+		default: 
+			if(c == '-' || std::isdigit(c)) NumberParse(reader,ret);
+			else throw "unknow value type";
+	}
+}
+
 JsonBase Parse(const std::string &s){
-	return std::move(Parse(s.c_str()));
+	return Parse(s.c_str());
 }
 
 JsonBase Parse(const char* ptr){
 	Reader reader(ptr);
-	return std::move(Parse(reader));
+	return Parse(reader);
 }
 
 JsonBase Parse(Reader &reader){
-	JsonBase value;
-	char c = reader.LookVCharF();
-	switch (c) {
-		case 'n': reader.MoveNext(); value = NullParse(reader); break;
-		case 't': reader.MoveNext(); value = BoolParse(reader,true); break;
-		case 'f': reader.MoveNext(); value = BoolParse(reader,false); break;
-		case '\"': reader.MoveNext(); value = StringParse(reader); break;
-		case '{': reader.MoveNext(); value = ObjectParse(reader); break;
-		case '[': reader.MoveNext(); value = ArrayParse(reader); break;
-		case '\0': throw "there is no value for this key?";
-		default: 
-			if(c == '-' || std::isdigit(c)) value = NumberParse(reader);
-			else throw "unknow value type";
-	}
-	return std::move(value);
-
+	JsonBase ret;
+	Parse(reader,ret);
+	return std::move(ret);
 }
-
-JsonBase ObjectParse(Reader &reader){
-	JsonBase ret(ValueType::Object);
+void ObjectParse(Reader &reader,JsonBase &ret){
 	char c = reader.GetVChar();
 	while(c == '\"'){
 		//parser key
@@ -120,7 +131,7 @@ JsonBase ObjectParse(Reader &reader){
 		if(reader.GetVChar() != ':') throw " : should after a key";
 
 		//parser value
-		ret[key] = std::move(Parse(reader));
+		Parse(reader,ret[key]);
 
 		//is more ? 
 		c = reader.GetVChar();
@@ -130,17 +141,14 @@ JsonBase ObjectParse(Reader &reader){
 		}
 	}
 	if(c != '}') throw "need the end of object '}'";
-	return std::move(ret);
 }
 
 
-JsonBase StringParse(Reader &reader){
-	return std::move(JsonBase(ReadStr(reader)));
+void StringParse(Reader &reader,JsonBase &ret){
+	ret = std::move(ReadStr(reader));
 }
 
-
-
-JsonBase NumberParse(Reader &reader){
+void NumberParse(Reader &reader,JsonBase &ret){
 	//Check number is valid
 	const char *ptr = reader.GetPtr();
 	{
@@ -163,40 +171,40 @@ JsonBase NumberParse(Reader &reader){
 		}
 	}
 	const double num = strtod(ptr, nullptr);
-
-	return std::move(JsonBase(num,ptr,reader.GetPtr()));
+	
+	ret = std::move(JsonBase(num,ptr,reader.GetPtr()));
 
 }
 
-JsonBase BoolParse(Reader &reader,bool exp){
+void BoolParse(Reader &reader,bool exp,JsonBase &ret){
 	if(exp){
 		if( reader.GetChar() != 'r' || reader.GetChar() != 'u' || reader.GetChar() != 'e' ) throw "strange value type";
 	}
 	else{
 		if( reader.GetChar() != 'a' || reader.GetChar() != 'l' || reader.GetChar() != 's' ||reader.GetChar() != 'e' ) throw "strange value type";
 	}
-	Bool *ret = new Bool(exp);
-	return std::move(JsonBase(exp));
-	
+	ret = exp;
 }
 
-JsonBase NullParse(Reader &reader){
+void NullParse(Reader &reader,JsonBase &ret){
 	if( reader.GetChar() != 'u' || reader.GetChar() != 'l' || reader.GetChar() != 'l' ) throw "strange value type";
-	return std::move(JsonBase(nullptr));
+	ret = nullptr;
 }
 
-JsonBase ArrayParse(Reader &reader){
-	JsonBase ret(ValueType::Array);
+void ArrayParse(Reader &reader,JsonBase &ret){
+	JsonBase ret_(ValueType::Array);
 	char c = reader.LookVCharF();
-	if(c == ']') {reader.MoveNext(); return std::move(ret);}
-	do{
-		ret.PushBack(Parse(reader));
-		c = reader.GetVChar();
-		if(c == ']') break;
-		else if(c == ',') continue;
-		else throw "error, expect , or ]";
-	}while(c != ']');
-	return std::move(ret);
+	if(c == ']') reader.MoveNext();
+	else {
+		do{
+			ret.PushBack(Parse(reader));
+			c = reader.GetVChar();
+			if(c == ']') break;
+			else if(c == ',') continue;
+			else throw "error, expect , or ]";
+		}while(c != ']');
+	}	
+	ret = std::move(ret);
 }
 
 }
