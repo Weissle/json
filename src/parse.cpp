@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <cctype>
+#include <iostream>
 
 namespace wjson {
 
@@ -60,7 +61,7 @@ std::string ReadStr(Reader &reader){
 	char c;
 	while(reader.GetChar(c)){
 		if(c == '\"') return ret;
-		else if(isspace(c) && c != ' ') throw "not allow space except ' ',please use escape char";
+		else if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
 		else if( c == '\\' ){
 			char tmp = reader.GetChar();
 			switch (tmp) {
@@ -125,6 +126,7 @@ JsonBase Parse(Reader &reader){
 }
 void ObjectParse(Reader &reader,JsonBase &ret){
 	char c = reader.GetVChar();
+	if (ret.Is<Object>() == false) { ret.To<Object>(); }
 	while(c == '\"'){
 		//parser key
 		std::string key = ReadStr(reader);
@@ -192,7 +194,7 @@ void NullParse(Reader &reader,JsonBase &ret){
 }
 
 void ArrayParse(Reader &reader,JsonBase &ret){
-	JsonBase ret_(ValueType::Array);
+	if (ret.Is<Array>() == false) { ret.To<Array>(); }
 	char c = reader.LookVCharF();
 	if(c == ']') reader.MoveNext();
 	else {
