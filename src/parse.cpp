@@ -58,6 +58,12 @@ void ToUTF8(std::string &s,Reader &reader){
 std::string ReadStr(Reader &reader){
 	std::string ret;
 	char c;
+	{
+		const char *ptr = reader.GetPtr();
+		int len = 0;
+		while( *ptr != '\"' ) ++ptr;
+		ret.reserve(ptr - reader.GetPtr());
+	}
 	while(reader.GetChar(c)){
 		if(c == '\"') return ret;
 		else if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
