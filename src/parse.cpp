@@ -202,15 +202,17 @@ void ArrayParse(Reader &reader,JsonBase &ret){
 	char c = reader.LookVCharF();
 	if(c == ']') reader.MoveNext();
 	else {
+		auto &arr = ret.Get<Array>();
 		do{
-			ret.PushBack(Parse(reader));
+			arr.emplace_back();
+			// ret.PushBack(Parse(reader));
+			Parse(reader,arr.back());
 			c = reader.GetVChar();
 			if(c == ']') break;
 			else if(c == ',') continue;
 			else throw "error, expect , or ]";
 		}while(c != ']');
 	}	
-	ret = std::move(ret);
 }
 
 }
