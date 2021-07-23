@@ -1,0 +1,6 @@
+json.h: 
+ directory: include/
+ suffix: ['h','hpp']
+json.cpp:
+ directory: src/
+ suffix: ['cpp']

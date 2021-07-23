@@ -47,6 +47,7 @@ protected:
 		}
 	}
 
+
 	void Dump(std::stringstream &stream,const std::string &s)const{
 		stream << '\"' << s << '\"';
 	}
@@ -148,6 +149,10 @@ public:
 		if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
 		return Get<Object>()[s];
 	}
+	JsonBase& operator[](std::string &&s){ 
+		if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
+		return Get<Object>()[std::move(s)];
+	}
 	void Remove(const std::string &s){ Get<Object>().erase(s); }
 
 	JsonBase& operator[](const int idx){ return Get<Array>()[idx]; }
@@ -156,6 +161,9 @@ public:
 	//void PushBack(JsonBase &&_other ) { Get<Array>().push_back(std::move(_other)); }
 	void PushBack(JsonBase &&_other ) { Get<Array>().emplace_back(std::move(_other)); }
 
+	void Clear(){
+		value_.emplace<0>(nullptr);
+	}
 
 public:
 	ObjectConstIterator ObjectBegin()const{
@@ -208,8 +216,7 @@ bool JsonBase::Is()const{
 
 template<class T>
 JsonBase& JsonBase::To(){
-	// if(Is<T>() == false) value_.emplace<T>();
-	value_.emplace<T>();
+	if(Is<T>() == false) value_.emplace<T>();
 	return *this;
 }
 

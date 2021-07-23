@@ -56,7 +56,6 @@ void ToUTF8(std::string &s,Reader &reader){
 }
 
 void ReadStr(Reader &reader,std::string &ret){
-	ret.clear();
 	char c;
 	{
 		const char *ptr = reader.GetPtr();
@@ -100,6 +99,7 @@ void Parse(const std::string &s,JsonBase &ret){
 }
 
 void Parse(const char* ptr,JsonBase &ret){
+	ret.Clear();
 	Reader reader(ptr);
 	__Parse(reader,ret);
 	if(reader.GetVChar()) throw "There are chars after the parse process which is not allowed";
@@ -130,20 +130,21 @@ JsonBase Parse(const std::string &s){
 JsonBase Parse(const char* ptr){
 	JsonBase ret;
 	Parse(ptr,ret);
-	return std::move(ret);
+	return ret;
 }
 
 void ObjectParse(Reader &reader,JsonBase &ret){
 	char c = reader.GetVChar();
-	if (ret.Is<Object>() == false) { ret.To<Object>(); }
+	ret.To<Object>();
 	while(c == '\"'){
 		//parser key
-		std::string key;
-		ReadStr(reader,key);
+		// std::string key;
+		// ReadStr(reader,key);
+		auto &tmp = ret[ReadStr(reader)];
 		if(reader.GetVChar() != ':') throw " : should after a key";
 
 		//parser value
-		__Parse(reader,ret[std::move(key)]);
+		__Parse(reader,tmp);
 
 		//is more ? 
 		c = reader.GetVChar();
@@ -205,7 +206,7 @@ void NullParse(Reader &reader,JsonBase &ret){
 }
 
 void ArrayParse(Reader &reader,JsonBase &ret){
-	if (ret.Is<Array>() == false) { ret.To<Array>(); }
+	ret.To<Array>();
 	char c = reader.LookVCharF();
 	if(c == ']') reader.MoveNext();
 	else {
