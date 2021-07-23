@@ -55,8 +55,8 @@ void ToUTF8(std::string &s,Reader &reader){
 	else throw "error when parse unicode";
 }
 
-std::string ReadStr(Reader &reader){
-	std::string ret;
+void ReadStr(Reader &reader,std::string &ret){
+	ret.clear();
 	char c;
 	{
 		const char *ptr = reader.GetPtr();
@@ -65,7 +65,7 @@ std::string ReadStr(Reader &reader){
 		ret.reserve(ptr - reader.GetPtr());
 	}
 	while(reader.GetChar(c)){
-		if(c == '\"') return ret;
+		if(c == '\"') return;
 		else if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
 		else if( c == '\\' ){
 			char tmp = reader.GetChar();
@@ -86,6 +86,12 @@ std::string ReadStr(Reader &reader){
 		else ret.push_back(c);
 	}
 	throw "error when read a string, all char have been read and do not meet a \"";
+	
+}
+
+std::string ReadStr(Reader &reader){
+	std::string ret;
+	ReadStr(reader,ret);
 	return ret;
 }
 
@@ -95,10 +101,12 @@ void Parse(const std::string &s,JsonBase &ret){
 
 void Parse(const char* ptr,JsonBase &ret){
 	Reader reader(ptr);
-	Parse(reader,ret);
+	__Parse(reader,ret);
+	if(reader.GetVChar()) throw "There are chars after the parse process which is not allowed";
 }
 
-void Parse(Reader &reader,JsonBase &ret){
+
+void __Parse(Reader &reader,JsonBase &ret){
 	char c = reader.LookVCharF();
 	switch (c) {
 		case 'n': reader.MoveNext(); NullParse(reader,ret); break;
@@ -112,6 +120,7 @@ void Parse(Reader &reader,JsonBase &ret){
 			if(c == '-' || std::isdigit(c)) NumberParse(reader,ret);
 			else throw "unknow value type";
 	}
+
 }
 
 JsonBase Parse(const std::string &s){
@@ -119,25 +128,22 @@ JsonBase Parse(const std::string &s){
 }
 
 JsonBase Parse(const char* ptr){
-	Reader reader(ptr);
-	return Parse(reader);
-}
-
-JsonBase Parse(Reader &reader){
 	JsonBase ret;
-	Parse(reader,ret);
+	Parse(ptr,ret);
 	return std::move(ret);
 }
+
 void ObjectParse(Reader &reader,JsonBase &ret){
 	char c = reader.GetVChar();
 	if (ret.Is<Object>() == false) { ret.To<Object>(); }
 	while(c == '\"'){
 		//parser key
-		std::string key = ReadStr(reader);
+		std::string key;
+		ReadStr(reader,key);
 		if(reader.GetVChar() != ':') throw " : should after a key";
 
 		//parser value
-		Parse(reader,ret[key]);
+		__Parse(reader,ret[std::move(key)]);
 
 		//is more ? 
 		c = reader.GetVChar();
@@ -151,7 +157,8 @@ void ObjectParse(Reader &reader,JsonBase &ret){
 
 
 void StringParse(Reader &reader,JsonBase &ret){
-	ret = std::move(ReadStr(reader));
+	ReadStr(reader,ret.To<std::string>().Get<std::string>());
+	//ret = std::move(ReadStr(reader));
 }
 
 void NumberParse(Reader &reader,JsonBase &ret){
@@ -206,12 +213,12 @@ void ArrayParse(Reader &reader,JsonBase &ret){
 		do{
 			arr.emplace_back();
 			// ret.PushBack(Parse(reader));
-			Parse(reader,arr.back());
+			__Parse(reader,arr.back());
 			c = reader.GetVChar();
 			if(c == ']') break;
 			else if(c == ',') continue;
 			else throw "error, expect , or ]";
-		}while(c != ']');
+		}while(true);
 	}	
 }
 

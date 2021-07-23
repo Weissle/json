@@ -37,7 +37,8 @@ using ArrayIterator = typename Array::iterator;
 class JsonBase{
 protected:
 	using Variant = std::variant<Null,Bool,Number,String,Array,Object>;
-	std::unique_ptr<Variant> value_;
+	Variant value_;
+	//std::unique_ptr<Variant> value_;
 	
 
 	void Indent(std::stringstream &stream,const int indent_num,const char indent_char,const int indent_level)const{
@@ -94,16 +95,16 @@ protected:
 	}
 
 public:
-	JsonBase():value_(std::make_unique<Variant>(nullptr)){}
+	JsonBase(){}
 	JsonBase(JsonBase &&_rv){
 		value_ = std::move(_rv.value_);
 	}
 	JsonBase(const std::nullptr_t b):JsonBase(){}
-	JsonBase(const bool b):value_(std::make_unique<Variant>(b)){}
-	JsonBase(const double d):value_(std::make_unique<Variant>(d)){}
-	JsonBase(const double d,const char *beg,const char *end):value_(std::make_unique<Variant>(Number(d,beg,end))){}
-	JsonBase(const char *s):value_(std::make_unique<Variant>(s)){}
-	JsonBase(const std::string &s):value_(std::make_unique<Variant>(s)){}
+	JsonBase(const bool b):value_(b){}
+	JsonBase(const double d):value_(d){}
+	JsonBase(const double d,const char *beg,const char *end):value_(Number(d,beg,end)){}
+	JsonBase(const char *s):value_(s){}
+	JsonBase(const std::string &s):value_(s){}
 
 	JsonBase(ValueType _type);
 	~JsonBase(){ 
@@ -113,7 +114,7 @@ public:
 		// std::cout<<"release : "<<release_count<<std::endl; 
 	}
 
-	ValueType GetType()const { return (ValueType)value_->index(); }
+	ValueType GetType()const { return (ValueType)value_.index(); }
 
 	template<class T>
 	bool Is()const;
@@ -121,13 +122,13 @@ public:
 	template<class T>
 	JsonBase& To();
 
-	JsonBase& operator=(const std::nullptr_t b){ value_->emplace<Null>(nullptr); return *this;}
-	JsonBase& operator=(const bool b){ value_->emplace<Bool>(b); return *this;}
-	JsonBase& operator=(const double d){ value_->emplace<Number>(d); return *this;}
-	JsonBase& operator=(const int d){ value_->emplace<Number>(d); return *this;}
-	JsonBase& operator=(const long long d){ value_->emplace<Number>(d); return *this;}
-	JsonBase& operator=(const char *s){ value_->emplace<String>(s); return *this;}
-	JsonBase& operator=(const std::string &s){ value_->emplace<String>(s); return *this;}
+	JsonBase& operator=(const std::nullptr_t b){ value_.emplace<Null>(nullptr); return *this;}
+	JsonBase& operator=(const bool b){ value_.emplace<Bool>(b); return *this;}
+	JsonBase& operator=(const double d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const int d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const long long d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const char *s){ value_.emplace<String>(s); return *this;}
+	JsonBase& operator=(const std::string &s){ value_.emplace<String>(s); return *this;}
 	JsonBase& operator=(JsonBase&& _rv){ value_ = std::move(_rv.value_); return *this;}
 
 	bool IsBool()const{ return Is<bool>(); }
@@ -144,7 +145,7 @@ public:
 	T& Get();
 
 	JsonBase& operator[](const std::string &s){ 
-		if( value_->index() == int(ValueType::Null) ) { To<Object>(); }
+		if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
 		return Get<Object>()[s];
 	}
 	void Remove(const std::string &s){ Get<Object>().erase(s); }
@@ -202,18 +203,18 @@ inline JsonBase::JsonBase(ValueType _type):JsonBase(){
 
 template<class T>
 bool JsonBase::Is()const{
-	return std::holds_alternative<T>(*value_);
+	return std::holds_alternative<T>(value_);
 }
 
 template<class T>
 JsonBase& JsonBase::To(){
-	// if(Is<T>() == false) value_->emplace<T>();
-	value_->emplace<T>();
+	// if(Is<T>() == false) value_.emplace<T>();
+	value_.emplace<T>();
 	return *this;
 }
 
 inline size_t JsonBase::Size()const{
-	switch (value_->index()) {
+	switch (value_.index()) {
 		case (int)ValueType::Array : return Get<Array>().size();
 		case (int)ValueType::Object : return Get<Object>().size();
 		case (int)ValueType::String : return Get<String>().size();
@@ -223,16 +224,16 @@ inline size_t JsonBase::Size()const{
 
 template<class T>
 const T& JsonBase::Get()const{
-	return std::get<T>(*value_);
+	return std::get<T>(value_);
 }
 
 template<class T>
 T& JsonBase::Get(){
-	return std::get<T>(*value_);
+	return std::get<T>(value_);
 }
 
 inline void JsonBase::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
-	switch (value_->index()) {
+	switch (value_.index()) {
 		case (int)ValueType::Null: stream<<"null"; break;
 		case (int)ValueType::Bool: stream<<(Get<bool>()? "true":"false"); break;
 		case (int)ValueType::Number: Get<Number>().Dump(stream); break;
