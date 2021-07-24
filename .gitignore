@@ -4,4 +4,6 @@
 compile_commands.json
 *.out
 /json.hpp
+/json.h
+/json.cpp
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "value/number.hpp"
-#include "json_base.hpp"
-#include "parse/reader.hpp"
+#include "value/number.h"
+#include "json.h"
+#include "parse/reader.h"
 
 
 #include <cstdlib>
@@ -11,7 +11,6 @@
 #include <cctype>
 
 namespace wjson {
-
 
 int HexToInt(const char c);
 

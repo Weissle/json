@@ -1,5 +1,7 @@
-#include "json.hpp"
+#include "json.h"
 #include "gtest/gtest.h"
+#include "value/number.h"
+
 
 #include <cstdint>
 #include <iostream>
@@ -64,9 +66,9 @@ TEST_F(JsonGeneratorTest, String){
 }
 
 TEST_F(JsonGeneratorTest, Number){
-	EXPECT_EQ(json1["int"].Get<wjson::Number>(), 500);
-	EXPECT_EQ(json1["double"].Get<wjson::Number>(), 5.03);
-	EXPECT_EQ(json1["long long"].Get<wjson::Number>(), (long long)(0x80000000));
+	EXPECT_EQ((double)json1["int"].Get<wjson::Number>(), 500);
+	EXPECT_EQ((double)json1["double"].Get<wjson::Number>(), 5.03);
+	EXPECT_EQ((double)json1["long long"].Get<wjson::Number>(), (long long)(0x80000000));
 }
 
 TEST_F(JsonGeneratorTest, Array){

@@ -1,4 +1,6 @@
-#include "json.hpp"
+#include "json.h"
+#include "parse/parse.h"
+#include "value/number.h"
 #include "gtest/gtest.h"
 
 

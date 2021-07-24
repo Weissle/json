@@ -1,9 +1,9 @@
-#include "value/number.hpp"
-#include "json_base.hpp"
-#include "parse/reader.hpp"
+#include "value/number.h"
+#include "json.h"
+#include "parse/reader.h"
 #include "parse/parse.h"
 
-
+#include <cstring>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -60,10 +60,11 @@ void ReadStr(Reader &reader,std::string &ret){
 	{
 		const char *ptr = reader.GetPtr();
 		int len = 0;
-		while( *ptr != '\"' ) ++ptr;
-		ret.reserve(ptr - reader.GetPtr());
+		while(ptr[len] != '\"') ++len;
+		ret.reserve(len);
 	}
-	while(reader.GetChar(c)){
+	while(true){
+		c = reader.GetChar();
 		if(c == '\"') return;
 		else if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
 		else if( c == '\\' ){
@@ -109,9 +110,9 @@ void Parse(const char* ptr,JsonBase &ret){
 void __Parse(Reader &reader,JsonBase &ret){
 	char c = reader.LookVCharF();
 	switch (c) {
-		case 'n': reader.MoveNext(); NullParse(reader,ret); break;
-		case 't': reader.MoveNext(); BoolParse(reader,true,ret); break;
-		case 'f': reader.MoveNext(); BoolParse(reader,false,ret); break;
+		case 'n': NullParse(reader,ret); break;
+		case 't': BoolParse(reader,true,ret); break;
+		case 'f': BoolParse(reader,false,ret); break;
 		case '\"': reader.MoveNext(); StringParse(reader,ret); break;
 		case '{': reader.MoveNext(); ObjectParse(reader,ret); break;
 		case '[': reader.MoveNext(); ArrayParse(reader,ret); break;
@@ -158,7 +159,7 @@ void ObjectParse(Reader &reader,JsonBase &ret){
 
 
 void StringParse(Reader &reader,JsonBase &ret){
-	ReadStr(reader,ret.To<std::string>().Get<std::string>());
+	ReadStr(reader,ret.To<String>().Get<String>());
 	//ret = std::move(ReadStr(reader));
 }
 
@@ -191,17 +192,26 @@ void NumberParse(Reader &reader,JsonBase &ret){
 }
 
 void BoolParse(Reader &reader,bool exp,JsonBase &ret){
+	if(!exp) reader.MoveNext();
+	const char *ptr = reader.GetPtr();
+
+	static const char* true_chars = "true";
+	static const char* false_chars = "alse"; //ignore f;
 	if(exp){
-		if( reader.GetChar() != 'r' || reader.GetChar() != 'u' || reader.GetChar() != 'e' ) throw "strange value type";
+		if(memcmp(ptr,true_chars,4) != 0) throw "strange value type";
 	}
 	else{
-		if( reader.GetChar() != 'a' || reader.GetChar() != 'l' || reader.GetChar() != 's' ||reader.GetChar() != 'e' ) throw "strange value type";
+		if(memcmp(ptr,false_chars,4) != 0) throw "strange value type";
 	}
+	reader.MoveNext(4);
 	ret = exp;
 }
 
 void NullParse(Reader &reader,JsonBase &ret){
-	if( reader.GetChar() != 'u' || reader.GetChar() != 'l' || reader.GetChar() != 'l' ) throw "strange value type";
+	const char *ptr = reader.GetPtr();
+	static const char* null_chars = "null";
+	if(memcmp(ptr,null_chars,4) != 0) throw "strange value type";
+	reader.MoveNext(4);
 	ret = nullptr;
 }
 
