@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <deque>
 #include <stdio.h>
 #include <memory>
 #include <assert.h>
@@ -25,7 +26,8 @@ using Bool = bool;
 using String = std::string;
 
 class JsonBase;
-using Array = std::vector<JsonBase>;
+//using Array = std::vector<JsonBase>;
+using Array = std::deque<JsonBase>;
 using Object = std::map<std::string,JsonBase>;
 using ObjectConstIterator = typename Object::const_iterator;
 using ArrayConstIterator = typename Array::const_iterator;
@@ -55,7 +57,6 @@ public:
 	JsonBase(const std::nullptr_t b):JsonBase(){}
 	JsonBase(const bool b):value_(b){}
 	JsonBase(const double d):value_(d){}
-	JsonBase(const double d,const char *beg,const char *end):value_(Number(d,beg,end)){}
 	JsonBase(const char *s):value_(s){}
 	JsonBase(const std::string &s):value_(s){}
 

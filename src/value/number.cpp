@@ -1,25 +1,29 @@
 #include "value/number.h"
+#include <string>
+#include <variant>
 
 namespace wjson {
 
 Number::Number():Number(0){}
 
-Number::Number(double v):Number(v,nullptr,nullptr){};
+Number::Number(double v):value(v){};
 
-Number::Number(double v,const char* ori_begin,const char* ori_end):value(v){
-	if(ori_begin && ori_end){
-		origin.assign(ori_begin,ori_end);
-	}
+Number::Number(const char* ori_begin,const char* ori_end){
+	value.emplace<1>(ori_begin,ori_end);
 }
 
-double Number::get()const{ return value; }
+Number::Number(const std::string &s):value(s){}
+
+double Number::get()const{ 
+	if(std::holds_alternative<double>(value)) return std::get<0>(value);
+	else return std::strtod(std::get<std::string>(value).data(),nullptr);
+}
 
 void Number::set(const double v_){
 	value = v_;
-	origin.clear();
 }
 
-Number::operator double()const{ return value; }
+Number::operator double()const{ return get(); }
 
 Number& Number::operator=(const double v){
 	set(v);
@@ -27,8 +31,8 @@ Number& Number::operator=(const double v){
 }
 
 void Number::Dump(std::stringstream &stream)const{
-	if(origin.size()) stream << origin;
-	else stream << value;
+	if(std::holds_alternative<std::string>(value)) stream << std::get<1>(value);
+	else stream << std::get<0>(value);
 }
 
 }

@@ -11,30 +11,31 @@
 #include <cctype>
 
 namespace wjson {
-
+// a hex char to int '0'~'9' 'a'~'f' 'A'~'F'
 int HexToInt(const char c);
 
-unsigned ReadHex4(std::string &s,Reader &reader);
+// read a hex number which consist of 4 hex char
+unsigned ReadHex4(Reader &reader);
 
+// From unicode to utf-8
 void ToUTF8(Reader &reader);
 
-// The first char of value have been read in all functions below except numberParse.
-// such as string is "<char><char><char>" , when we call functions readStr or stringParse, the first '\"' have been read. 
-// Thus it will get <char><char><char>" and finish it's work when it meet '\"'.
-//
-void ReadStr(Reader &reader,std::string &ret);
-
-std::string ReadStr(Reader &reader);
-
+// Below four parse function are used for the user, allow of them will call Parse(const char*,JsonBase &) function.
+// It will check that is any characters rest after the parse process is done.
+// If it is, throw a exception.
 void Parse(const std::string &s,JsonBase &ret);
 
 void Parse(const char* ptr,JsonBase &ret);
 
-void __Parse(Reader &reader,JsonBase &ret);
-
 JsonBase Parse(const std::string &s);
 
 JsonBase Parse(const char* ptr);
+
+void __Parse(Reader &reader,JsonBase &ret);
+
+std::string ReadStr(Reader &reader);
+
+void ReadStr(Reader &reader,std::string &ret);
 
 void ObjectParse(Reader &reader,JsonBase &ret);
 

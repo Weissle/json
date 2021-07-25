@@ -138,8 +138,6 @@ void ObjectParse(Reader &reader,JsonBase &ret){
 	ret.To<Object>();
 	while(c == '\"'){
 		//parser key
-		// std::string key;
-		// ReadStr(reader,key);
 		auto &tmp = ret[ReadStr(reader)];
 		if(reader.GetVChar() != ':') throw " : should after a key";
 
@@ -159,7 +157,6 @@ void ObjectParse(Reader &reader,JsonBase &ret){
 
 void StringParse(Reader &reader,JsonBase &ret){
 	ReadStr(reader,ret.To<String>().Get<String>());
-	//ret = std::move(ReadStr(reader));
 }
 
 void NumberParse(Reader &reader,JsonBase &ret){
@@ -181,12 +178,12 @@ void NumberParse(Reader &reader,JsonBase &ret){
 			c = reader.GetChar();
 			if(c == '-' || c == '+') c = reader.GetChar();
 			if(!isdigit(c)) throw "at least one digit should after e or E";
-			while(isdigit(c = reader.LookChar())) reader.MoveNext();
+			while(isdigit(reader.LookChar())) reader.MoveNext();
 		}
 	}
-	const double num = strtod(ptr, nullptr);
+	//const double num = strtod(ptr, nullptr);
 	ret.To<Number>();
-	ret.Get<Number>() = Number(num,ptr,reader.GetPtr());
+	ret.Get<Number>() = Number(ptr,reader.GetPtr());
 
 }
 
