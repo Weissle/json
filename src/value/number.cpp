@@ -12,14 +12,19 @@ Number::Number(double v,const char* ori_begin,const char* ori_end):value(v){
 	}
 }
 
-double Number::GetValue()const{ return value; }
+double Number::get()const{ return value; }
 
-void Number::SetValue(const double v_){
+void Number::set(const double v_){
 	value = v_;
 	origin.clear();
 }
 
 Number::operator double()const{ return value; }
+
+Number& Number::operator=(const double v){
+	set(v);
+	return *this;
+}
 
 void Number::Dump(std::stringstream &stream)const{
 	if(origin.size()) stream << origin;

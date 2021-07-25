@@ -116,7 +116,6 @@ void __Parse(Reader &reader,JsonBase &ret){
 		case '\"': reader.MoveNext(); StringParse(reader,ret); break;
 		case '{': reader.MoveNext(); ObjectParse(reader,ret); break;
 		case '[': reader.MoveNext(); ArrayParse(reader,ret); break;
-		case '\0': throw "there is no value for this key?";
 		default: 
 			if(c == '-' || std::isdigit(c)) NumberParse(reader,ret);
 			else throw "unknow value type";

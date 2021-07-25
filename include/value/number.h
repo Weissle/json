@@ -16,8 +16,9 @@ public:
 	Number(double v);
 	Number(double v,const char* ori_begin,const char* ori_end);
 
-	double GetValue()const;
-	void SetValue(const double v_);
+	double get()const;
+	void set(const double v_);
+	Number& operator=(const double v);
 	operator double()const;	
 	void Dump(std::stringstream &stream)const;
 

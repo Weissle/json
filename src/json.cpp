@@ -4,8 +4,7 @@
 
 namespace wjson {
 
-JsonBase::JsonBase(ValueType _type):JsonBase(){
-	// value_ = std::make_unique<Variant>();
+JsonBase::JsonBase(ValueType _type){
 	switch (_type) {
 		case ValueType::Null: To<Null>(); break;
 		case ValueType::Bool: To<Bool>(); break;
