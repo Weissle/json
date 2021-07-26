@@ -5,30 +5,31 @@
 namespace wjson {
 
 Number::Number():Number(0){}
-
-Number::Number(double v):value(v){};
+Number::Number(const char *ptr){
+	value.emplace<1>(ptr);
+}
 
 Number::Number(const char* ori_begin,const char* ori_end){
 	value.emplace<1>(ori_begin,ori_end);
 }
 
-Number::Number(const std::string &s):value(s){}
-
 double Number::get()const{ 
-	if(std::holds_alternative<double>(value)) return std::get<0>(value);
-	else return std::strtod(std::get<std::string>(value).data(),nullptr);
+	switch (value.index()){
+		case 1: return std::get<0>(value);
+		case 2: return std::strtod(std::get<1>(value).data(),nullptr);
+	}
+	return 0;
 }
 
-void Number::set(const double v_){
-	value = v_;
-}
-
-Number::operator double()const{ return get(); }
-
-Number& Number::operator=(const double v){
-	set(v);
+Number& Number::operator=(const char *ptr){
+	value.emplace<1>(ptr);
 	return *this;
 }
+
+void Number::set(const char *ptr){
+	value.emplace<1>(ptr);
+}
+Number::operator double()const{ return get(); }
 
 void Number::Dump(std::stringstream &stream)const{
 	if(std::holds_alternative<std::string>(value)) stream << std::get<1>(value);

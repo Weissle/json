@@ -13,20 +13,39 @@ class Number{
 	std::variant<double,std::string> value;
 public:
 	Number();
-	Number(double v);
+	template<class T>
+	Number(T && v);
+	Number(const char *ptr);
 	Number(const char* ori_begin,const char* ori_end);
-	Number(const std::string &s);
 
 	double get()const;
-	void set(const double v_);
+
 	template<class T>
-	void set(const T from,const T to);
-	Number& operator=(const double v);
-	Number& operator=(const std::string &s);
+	void set(T && v);
+	void set(const char *ptr);
+
+	template<class T>
+	Number& operator=(T &&v);
+	Number& operator=(const char *ptr);
+
 	operator double()const;	
 	void Dump(std::stringstream &stream)const;
 
 };
+
+template<class T>
+Number::Number(T && v):value(v){};
+
+template<class T>
+void Number::set(T && v){
+	value = v;
+}
+
+template<class T>
+Number& Number::operator=(T &&v){
+	value = std::forward<T>(v);
+	return *this;
+}
 
 }
 
