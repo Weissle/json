@@ -60,14 +60,22 @@ void ReadStr(Reader &reader,std::string &ret){
 	{
 		const char *ptr = reader.GetPtr();
 		int len = 0;
-		while(ptr[len] != '\"') ++len;
+		while(ptr[len] != '\"' || ptr[len-1]=='\\' ) ++len;
 		ret.reserve(len);
 	}
 	while(true){
-		c = reader.GetChar();
-		if(c == '\"') return;
-		else if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
-		else if( c == '\\' ){
+		const char *head = reader.GetPtr();
+		const char *ptr = head;
+		char c;
+		do{
+			c = *ptr;
+			if(isspace(static_cast<unsigned char>(c)) && c != ' ') throw "not allow space except ' ',please use escape char";
+			if(c != '\"' && c != '\\') ++ptr;
+			else break;
+		}while(true);
+		ret.append(head,ptr);
+		reader.MoveNext(ptr-head+1);
+		if( c == '\\' ){
 			char tmp = reader.GetChar();
 			switch (tmp) {
 				case 'b': c = '\b'; break;
@@ -83,10 +91,11 @@ void ReadStr(Reader &reader,std::string &ret){
 			}
 			if(c) ret.push_back(c);
 		}
-		else ret.push_back(c);
+		// c == '\"'
+		else {
+			return;
+		}
 	}
-	throw "error when read a string, all char have been read and do not meet a \"";
-	
 }
 
 std::string ReadStr(Reader &reader){
