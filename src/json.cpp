@@ -1,5 +1,6 @@
 #include "json.h"
 #include "value/number.h"
+#include <variant>
 
 
 namespace wjson {
@@ -25,68 +26,14 @@ size_t JsonBase::Size()const{
 	}
 }
 
-void JsonBase::Dump(std::stringstream &stream,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
-	switch (value_.index()) {
-		case (int)ValueType::Null: stream<<"null"; break;
-		case (int)ValueType::Bool: stream<<(Get<bool>()? "true":"false"); break;
-		case (int)ValueType::Number: Get<Number>().Dump(stream); break;
-		case (int)ValueType::String: Dump(stream,Get<String>()); break;
-		case (int)ValueType::Object: Dump(stream,Get<Object>(),pretty,indent_num,indent_char,indent_level); break;
-		case (int)ValueType::Array: Dump(stream,Get<Array>(),pretty,indent_num,indent_char,indent_level); break;
-	}
-}
 
+void JsonBase::Dump(std::stringstream &stream)const{
+	std::visit(DumpPackage(), value_,std::variant<std::stringstream*>(&stream));
+}
 void JsonBase::Indent(std::stringstream &stream,const int indent_num,const char indent_char,const int indent_level)const{
 	for (int i = 0; i < indent_level * indent_num; ++i){ 
 		stream<<indent_char;
 	}
-}
-
-void JsonBase::Dump(std::stringstream &stream,const std::string &s)const{
-	stream << '\"' << s << '\"';
-}
-
-void JsonBase::Dump(std::stringstream &stream,const Array &arr,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
-
-	stream << "[";
-	if(pretty) stream << '\n';
-	for(auto it=arr.begin(); it!=arr.end();++it){
-		if(it != arr.begin()) stream<<",";
-		if(pretty) {
-			stream << '\n';
-			Indent(stream,indent_num,indent_char,indent_level+1);
-		}
-		auto &tmp = *it;
-		(*it).Dump(stream,pretty,indent_num,indent_char,indent_level+1);
-	}
-	if(pretty) {
-		stream << '\n';
-		Indent(stream,indent_num,indent_char,indent_level);
-	}
-	stream << ']';
-	return;
-}
-
-void JsonBase::Dump(std::stringstream &stream,const Object &obj,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const{
-
-	stream << "{";
-	if(pretty) stream << '\n';
-	for(auto it=obj.begin(); it!=obj.end();++it){
-		if(it != obj.begin()) stream<<",";
-		if(pretty) {
-			stream << '\n';
-			Indent(stream,indent_num,indent_char,indent_level+1);
-		}
-		Dump(stream,it->first);
-		stream<<':';
-		(it->second).Dump(stream,pretty,indent_num,indent_char,indent_level+1);
-	}
-	if(pretty) {
-		stream << '\n';
-		Indent(stream,indent_num,indent_char,indent_level);
-	}
-	stream << '}';
-	return;
 }
 
 ObjectConstIterator JsonBase::ObjectBegin()const{

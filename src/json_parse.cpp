@@ -96,10 +96,6 @@ std::string JsonBase::ReadStr(Reader &reader){
 	return ret;
 }
 
-void JsonBase::Parse(const std::string &s,JsonBase &ret){
-	Parse(s.c_str(),ret);
-}
-
 void JsonBase::Parse(const char* ptr,JsonBase &ret){
 	ret.Clear();
 	Reader reader(ptr);
