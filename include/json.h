@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <map>
 #include <string>
-#include <vector>
 #include <deque>
 #include <stdio.h>
 #include <memory>
@@ -13,6 +12,7 @@
 #include <unordered_map>
 #include <iostream>
 
+#include "parse/reader.h"
 #include "value/number.h"
 
 namespace wjson {
@@ -36,10 +36,47 @@ using ArrayIterator = typename Array::iterator;
 
 
 class JsonBase{
+
+protected:
+	// a hex char to int '0'~'9' 'a'~'f' 'A'~'F'
+	int HexToInt(const char c);
+
+	// read a hex number which consist of 4 hex char
+	unsigned ReadHex4(Reader &reader);
+
+	// From unicode to utf-8
+	void ToUTF8(std::string &s, Reader &reader);
+
+	// Below four parse function are used for the user, allow of them will call Parse(const char*,JsonBase &) function.
+	// It will check that is any characters rest after the parse process is done.
+	// If it is, throw a exception.
+
+	void __Parse(Reader &reader,JsonBase &ret);
+
+	std::string ReadStr(Reader &reader);
+
+	void ReadStr(Reader &reader,std::string &ret);
+
+	void ObjectParse(Reader &reader,JsonBase &ret);
+
+	void StringParse(Reader &reader,JsonBase &ret);
+
+	void NumberParse(Reader &reader,JsonBase &ret);
+
+	void BoolParse(Reader &reader,bool exp,JsonBase &ret);
+
+	void NullParse(Reader &reader,JsonBase &ret);
+
+	void ArrayParse(Reader &reader,JsonBase &ret);
+
+	void Parse(const std::string &s,JsonBase &ret);
+
+	void Parse(const char* ptr,JsonBase &ret);
+
 protected:
 	using Variant = std::variant<Null,Bool,Number,String,Array,Object>;
 	Variant value_;
-	
+
 
 	void Indent(std::stringstream &stream,const int indent_num,const char indent_char,const int indent_level)const;
 
@@ -49,7 +86,7 @@ protected:
 
 	void Dump(std::stringstream &stream,const Object &obj,const bool pretty,const int indent_num,const int indent_char,const int indent_level)const;
 
-public:
+	public:
 	JsonBase(){}
 	JsonBase(JsonBase &&_rv){
 		value_ = std::move(_rv.value_);
@@ -71,16 +108,16 @@ public:
 	ValueType GetType()const { return (ValueType)value_.index(); }
 
 	template<class T>
-	bool Is()const;
+		bool Is()const;
 
 	template<class T>
-	JsonBase& To();
+		JsonBase& To();
 
 	template<class T>
-	const T& Get()const;
+		const T& Get()const;
 
 	template<class T>
-	T& Get();
+		T& Get();
 
 	JsonBase& operator=(const std::nullptr_t b){ value_.emplace<Null>(nullptr); return *this;}
 	JsonBase& operator=(const bool b){ value_.emplace<Bool>(b); return *this;}
@@ -122,7 +159,12 @@ public:
 
 public:
 	size_t Size()const;
+
 	void Dump(std::stringstream &stream,const bool pretty=true,const int indent_num=4,const int indent_char=' ',const int indent_level=0)const;
+
+	void Parse(const std::string &s);
+
+	void Parse(const char* ptr);
 };
 
 template<class T>

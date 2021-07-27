@@ -15,8 +15,8 @@ Number::Number(const char* ori_begin,const char* ori_end){
 
 double Number::get()const{ 
 	switch (value.index()){
-		case 1: return std::get<0>(value);
-		case 2: return std::strtod(std::get<1>(value).data(),nullptr);
+		case 0: return std::get<0>(value);
+		case 1: return std::strtod(std::get<1>(value).data(),nullptr);
 	}
 	return 0;
 }

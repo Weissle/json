@@ -1,5 +1,4 @@
 #include "json.h"
-#include "parse/parse.h"
 #include "value/number.h"
 #include "gtest/gtest.h"
 
@@ -10,7 +9,7 @@ protected:
 	wjson::Json json1;
 	void SetUp() override{
 		std::string case1 = "{\"true\":true,   \"false\":false,   \"null\":null , \"arr\":[false,true,null],\"str\":\"string\"}";
-		json1 = wjson::Parse(case1);
+		json1.Parse(case1);
 
 	}
 };
