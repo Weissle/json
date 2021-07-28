@@ -1,10 +1,10 @@
-#include "parse/reader.h"
+#include "utils/reader.h"
 #include "json.h"
 #include <cstring>
 
 namespace wjson {
 
-int JsonBase::HexToInt(char c){
+int JsonBase::hex_to_int(char c){
 	if(isdigit(c)) return c - '0';
 	else if(c >='a' && c<='f') return 10+c-'a';
 	else if(c >='A' && c<='F') return 10+c-'A';
@@ -12,19 +12,19 @@ int JsonBase::HexToInt(char c){
 	return 0;
 }
 
-unsigned JsonBase::ReadHex4(Reader &reader){
+unsigned JsonBase::read_4_hex(Reader &reader){
 	unsigned ret=0;
 	for (int i = 3; i >= 0 ; --i){ 
-		ret |= HexToInt(reader.GetChar()) << (i<<2);
+		ret |= hex_to_int(reader.get_char()) << (i<<2);
 	}
 	return ret;
 }
 
-void JsonBase::ToUTF8(std::string &s,Reader &reader){
-	unsigned t = ReadHex4(reader);
+void JsonBase::unicode_to_utf8(std::string &s,Reader &reader){
+	unsigned t = read_4_hex(reader);
 	if(t >= 0xD800 && t <= 0xDBFF){
-		if(reader.GetChar()!= '\\' || reader.GetChar()!='u') throw "error when parse unicode";
-		unsigned tmp = ReadHex4(reader);
+		if(reader.get_char()!= '\\' || reader.get_char()!='u') throw "error when parse unicode";
+		unsigned tmp = read_4_hex(reader);
 		if(tmp < 0xDC00 || tmp > 0xDFFF) throw "error when parse unicode";
 		t = 0x10000 + (t - 0xD800) * 0x400 + (tmp - 0xDC00);
 	}
@@ -47,16 +47,16 @@ void JsonBase::ToUTF8(std::string &s,Reader &reader){
 	else throw "error when parse unicode";
 }
 
-void JsonBase::ReadStr(Reader &reader,std::string &ret){
+void JsonBase::read_str(Reader &reader,std::string &ret){
 	char c;
 	{
-		const char *ptr = reader.GetPtr();
+		const char *ptr = reader.get_ptr();
 		int len = 0;
 		while(ptr[len] != '\"' || ptr[len-1]=='\\' ) ++len;
 		ret.reserve(len);
 	}
 	while(true){
-		const char *head = reader.GetPtr();
+		const char *head = reader.get_ptr();
 		const char *ptr = head;
 		char c;
 		do{
@@ -66,9 +66,9 @@ void JsonBase::ReadStr(Reader &reader,std::string &ret){
 			else break;
 		}while(true);
 		ret.append(head,ptr);
-		reader.MoveNext(ptr-head+1);
+		reader.move_next(ptr-head+1);
 		if( c == '\\' ){
-			char tmp = reader.GetChar();
+			char tmp = reader.get_char();
 			switch (tmp) {
 				case 'b': c = '\b'; break;
 				case 'f': c = '\f'; break;
@@ -78,7 +78,7 @@ void JsonBase::ReadStr(Reader &reader,std::string &ret){
 				case '"': c = '\"'; break;
 				case '/': c = '/'; break;
 				case '\\': c = '\\'; break;
-				case 'u' : c = 0; ToUTF8(ret, reader); break;
+				case 'u' : c = 0; unicode_to_utf8(ret, reader); break;
 				default: throw "unknow escape character";
 			}
 			if(c) ret.push_back(c);
@@ -90,59 +90,59 @@ void JsonBase::ReadStr(Reader &reader,std::string &ret){
 	}
 }
 
-std::string JsonBase::ReadStr(Reader &reader){
+std::string JsonBase::read_str(Reader &reader){
 	std::string ret;
-	ReadStr(reader,ret);
+	read_str(reader,ret);
 	return ret;
 }
 
-void JsonBase::Parse(const char* ptr,JsonBase &ret){
-	ret.Clear();
+void JsonBase::parse(const char* ptr,JsonBase &ret){
+	ret.clear();
 	Reader reader(ptr);
-	__Parse(reader,ret);
-	if(reader.GetVChar()) throw "There are chars after the parse process which is not allowed";
+	__parse(reader,ret);
+	if(reader.get_vchar()) throw "There are chars after the parse process which is not allowed";
 }
 
 
-void JsonBase::__Parse(Reader &reader,JsonBase &ret){
-	char c = reader.LookVCharF();
+void JsonBase::__parse(Reader &reader,JsonBase &ret){
+	char c = reader.look_vchar_f();
 	switch (c) {
-		case 'n': NullParse(reader,ret); break;
-		case 't': BoolParse(reader,true,ret); break;
-		case 'f': BoolParse(reader,false,ret); break;
-		case '\"': reader.MoveNext(); StringParse(reader,ret); break;
-		case '{': reader.MoveNext(); ObjectParse(reader,ret); break;
-		case '[': reader.MoveNext(); ArrayParse(reader,ret); break;
+		case 'n': null_parse(reader,ret); break;
+		case 't': bool_parse(reader,true,ret); break;
+		case 'f': bool_parse(reader,false,ret); break;
+		case '\"': reader.move_next(); string_parse(reader,ret); break;
+		case '{': reader.move_next(); object_parse(reader,ret); break;
+		case '[': reader.move_next(); array_parse(reader,ret); break;
 		default: 
-			if(c == '-' || std::isdigit(c)) NumberParse(reader,ret);
+			if(c == '-' || std::isdigit(c)) number_parse(reader,ret);
 			else throw "unknow value type";
 	}
 
 }
 
-void JsonBase::Parse(const std::string &s){
-	Parse(s.c_str());
+void JsonBase::parse(const std::string &s){
+	parse(s.c_str());
 }
 
-void JsonBase::Parse(const char* ptr){
-	Parse(ptr,*this);
+void JsonBase::parse(const char* ptr){
+	parse(ptr,*this);
 }
 
-void JsonBase::ObjectParse(Reader &reader,JsonBase &ret){
-	char c = reader.GetVChar();
-	ret.To<Object>();
+void JsonBase::object_parse(Reader &reader,JsonBase &ret){
+	char c = reader.get_vchar();
+	ret.to<Object>();
 	while(c == '\"'){
 		//parser key
-		auto &tmp = ret[ReadStr(reader)];
-		if(reader.GetVChar() != ':') throw " : should after a key";
+		auto &tmp = ret[read_str(reader)];
+		if(reader.get_vchar() != ':') throw " : should after a key";
 
 		//parser value
-		__Parse(reader,tmp);
+		__parse(reader,tmp);
 
 		//is more ? 
-		c = reader.GetVChar();
+		c = reader.get_vchar();
 		if(c == ','){
-			c = reader.GetVChar();
+			c = reader.get_vchar();
 			if(c != '\"') throw "a key should after a comma";
 		}
 	}
@@ -150,41 +150,41 @@ void JsonBase::ObjectParse(Reader &reader,JsonBase &ret){
 }
 
 
-void JsonBase::StringParse(Reader &reader,JsonBase &ret){
-	ReadStr(reader,ret.To<String>().Get<String>());
+void JsonBase::string_parse(Reader &reader,JsonBase &ret){
+	read_str(reader,ret.to<String>().get<String>());
 }
 
-void JsonBase::NumberParse(Reader &reader,JsonBase &ret){
+void JsonBase::number_parse(Reader &reader,JsonBase &ret){
 	//Check number is valid
-	const char *ptr = reader.GetPtr();
+	const char *ptr = reader.get_ptr();
 	{
-		char c = reader.GetChar();
-		if(c == '-') c = reader.GetChar();
+		char c = reader.get_char();
+		if(c == '-') c = reader.get_char();
 		if(isdigit(c) == false) throw "interger part should have at least one digit";
-		if(c == '0' && isdigit(reader.LookChar())) throw "if interger part is 0, it should be one 0";
-		while(isdigit(c = reader.LookChar())) reader.MoveNext();
+		if(c == '0' && isdigit(reader.look_char())) throw "if interger part is 0, it should be one 0";
+		while(isdigit(c = reader.look_char())) reader.move_next();
 
 		if(c == '.') {
-			reader.MoveNext();
-			while(isdigit(c = reader.LookChar())) reader.MoveNext();
+			reader.move_next();
+			while(isdigit(c = reader.look_char())) reader.move_next();
 		}
 		if(c == 'e' || c =='E'){
-			reader.MoveNext();
-			c = reader.GetChar();
-			if(c == '-' || c == '+') c = reader.GetChar();
+			reader.move_next();
+			c = reader.get_char();
+			if(c == '-' || c == '+') c = reader.get_char();
 			if(!isdigit(c)) throw "at least one digit should after e or E";
-			while(isdigit(reader.LookChar())) reader.MoveNext();
+			while(isdigit(reader.look_char())) reader.move_next();
 		}
 	}
 	//const double num = strtod(ptr, nullptr);
-	ret.To<Number>();
-	ret.Get<Number>() = Number(ptr,reader.GetPtr());
+	ret.to<Number>();
+	ret.get<Number>() = Number(ptr,reader.get_ptr());
 
 }
 
-void JsonBase::BoolParse(Reader &reader,bool exp,JsonBase &ret){
-	if(!exp) reader.MoveNext();
-	const char *ptr = reader.GetPtr();
+void JsonBase::bool_parse(Reader &reader,bool exp,JsonBase &ret){
+	if(!exp) reader.move_next();
+	const char *ptr = reader.get_ptr();
 
 	static constexpr char* true_chars = "true";
 	static constexpr char* false_chars = "alse"; //ignore f;
@@ -197,31 +197,31 @@ void JsonBase::BoolParse(Reader &reader,bool exp,JsonBase &ret){
 	else{
 		if(tmp != false_unsigned) throw "strange value type";
 	}
-	reader.MoveNext(4);
+	reader.move_next(4);
 	ret = exp;
 }
 
-void JsonBase::NullParse(Reader &reader,JsonBase &ret){
-	const char *ptr = reader.GetPtr();
+void JsonBase::null_parse(Reader &reader,JsonBase &ret){
+	const char *ptr = reader.get_ptr();
 	static const char* null_chars = "null";
 	static const unsigned null_unsigned = *(static_cast<const unsigned*>(static_cast<const void*>(null_chars)));
 	const unsigned tmp = *(static_cast<const unsigned*>(static_cast<const void*>(ptr)));
 	if(tmp != null_unsigned) throw "strange value type";
-	reader.MoveNext(4);
+	reader.move_next(4);
 	ret = nullptr;
 }
 
-void JsonBase::ArrayParse(Reader &reader,JsonBase &ret){
-	ret.To<Array>();
-	char c = reader.LookVCharF();
-	if(c == ']') reader.MoveNext();
+void JsonBase::array_parse(Reader &reader,JsonBase &ret){
+	ret.to<Array>();
+	char c = reader.look_vchar_f();
+	if(c == ']') reader.move_next();
 	else {
-		auto &arr = ret.Get<Array>();
+		auto &arr = ret.get<Array>();
 		do{
 			arr.emplace_back();
 			// ret.PushBack(Parse(reader));
-			__Parse(reader,arr.back());
-			c = reader.GetVChar();
+			__parse(reader,arr.back());
+			c = reader.get_vchar();
 			if(c == ']') break;
 			else if(c == ',') continue;
 			else throw "error, expect , or ]";

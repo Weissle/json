@@ -3,6 +3,16 @@
 
 namespace wjson {
 
+void JsonBase::dump(std::stringstream &stream)const{
+	std::visit(DumpPackage(), value_,std::variant<std::stringstream*>(&stream));
+}
+
+std::string JsonBase::dump()const{
+	std::stringstream stream;
+	dump(stream);
+	return stream.str();
+}
+
 void DumpPackage::operator()(const Null &,std::stringstream *stream_ptr){ *stream_ptr<<"null"; }
 
 void DumpPackage::operator()(const Bool &b,std::stringstream *stream_ptr){ *stream_ptr<<((b)? "true":"false"); }
@@ -38,7 +48,7 @@ void DumpPackage::operator()(const Array &arr,std::stringstream *stream_ptr){
 	for(auto it=arr.begin(); it!=arr.end();++it){
 		if(it != arr.begin()) *stream_ptr<<",";
 		auto &tmp = *it;
-		(*it).Dump(*stream_ptr);
+		(*it).dump(*stream_ptr);
 	}
 	*stream_ptr << ']';
 	return;
@@ -51,20 +61,11 @@ void DumpPackage::operator()(const Object &obj,std::stringstream *stream_ptr){
 		if(it != obj.begin()) *stream_ptr<<",";
 		(*this)(it->first,stream_ptr);
 		*stream_ptr<<':';
-		(it->second).Dump(*stream_ptr);
+		(it->second).dump(*stream_ptr);
 	}
 	*stream_ptr << '}';
 	return;
 }
 
-void JsonBase::Dump(std::stringstream &stream)const{
-	std::visit(DumpPackage(), value_,std::variant<std::stringstream*>(&stream));
-}
-
-std::string JsonBase::Dump()const{
-	std::stringstream stream;
-	Dump(stream);
-	return stream.str();
-}
 
 }

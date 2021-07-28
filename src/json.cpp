@@ -7,79 +7,79 @@ namespace wjson {
 
 JsonBase::JsonBase(ValueType _type){
 	switch (_type) {
-		case ValueType::Null: To<Null>(); break;
-		case ValueType::Bool: To<Bool>(); break;
-		case ValueType::Number: To<Number>(); break;
-		case ValueType::String: To<String>(); break;
-		case ValueType::Object: To<Object>(); break;
-		case ValueType::Array: To<Array>(); break;
+		case ValueType::Null: to<Null>(); break;
+		case ValueType::Bool: to<Bool>(); break;
+		case ValueType::Number: to<Number>(); break;
+		case ValueType::String: to<String>(); break;
+		case ValueType::Object: to<Object>(); break;
+		case ValueType::Array: to<Array>(); break;
 	}
 }
 
 
-size_t JsonBase::Size()const{
+size_t JsonBase::size()const{
 	switch (value_.index()) {
-		case (int)ValueType::Array : return Get<Array>().size();
-		case (int)ValueType::Object : return Get<Object>().size();
-		case (int)ValueType::String : return Get<String>().size();
+		case (int)ValueType::Array : return get<Array>().size();
+		case (int)ValueType::Object : return get<Object>().size();
+		case (int)ValueType::String : return get<String>().size();
 		default: throw "This value has no size.";
 	}
 }
 
 
 
-ObjectConstIterator JsonBase::ObjectBegin()const{
-	return Get<Object>().begin();
+ObjectConstIterator JsonBase::object_begin()const{
+	return get<Object>().begin();
 }
 
-ObjectConstIterator JsonBase::ObjectEnd()const{
-	return Get<Object>().end();
+ObjectConstIterator JsonBase::object_end()const{
+	return get<Object>().end();
 }
 
-ArrayConstIterator JsonBase::ArrayBegin()const{
-	return Get<Array>().begin();
+ArrayConstIterator JsonBase::array_begin()const{
+	return get<Array>().begin();
 }
 
-ArrayConstIterator JsonBase::ArrayEnd()const{
-	return Get<Array>().end();
+ArrayConstIterator JsonBase::array_end()const{
+	return get<Array>().end();
 }
 
-ObjectIterator JsonBase::ObjectBegin(){
-	return Get<Object>().begin();
+ObjectIterator JsonBase::object_begin(){
+	return get<Object>().begin();
 }
 
-ObjectIterator JsonBase::ObjectEnd(){
-	return Get<Object>().end();
+ObjectIterator JsonBase::object_end(){
+	return get<Object>().end();
 }
 
-ArrayIterator JsonBase::ArrayBegin(){
-	return Get<Array>().begin();
+ArrayIterator JsonBase::array_begin(){
+	return get<Array>().begin();
 }
 
-ArrayIterator JsonBase::ArrayEnd(){ 
-	return Get<Array>().end();
+ArrayIterator JsonBase::array_end(){ 
+	return get<Array>().end();
 }
 
 JsonBase& JsonBase::operator[](const std::string &s){ 
-	if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
-	return Get<Object>()[s];
+	if( value_.index() == int(ValueType::Null) ) { to<Object>(); }
+	return get<Object>()[s];
 }
 
 JsonBase& JsonBase::operator[](std::string &&s){ 
-	if( value_.index() == int(ValueType::Null) ) { To<Object>(); }
-	return Get<Object>()[std::move(s)];
+	if( value_.index() == int(ValueType::Null) ) { to<Object>(); }
+	return get<Object>()[std::move(s)];
 }
 
-void JsonBase::Clear(){
+void JsonBase::clear(){
 	value_.emplace<0>(nullptr);
 }
 
-void JsonBase::Remove(const std::string &s){ Get<Object>().erase(s); }
+void JsonBase::remove(const std::string &s){ get<Object>().erase(s); }
 
-JsonBase& JsonBase::operator[](const int idx){ return Get<Array>()[idx]; }
+JsonBase& JsonBase::operator[](const int idx){ return get<Array>()[idx]; }
 
-void JsonBase::Resize(int s){ Get<Array>().resize(s); }
+void JsonBase::resize(int s){ get<Array>().resize(s); }
 
-void JsonBase::PushBack(JsonBase &&_other ){ Get<Array>().emplace_back(std::move(_other)); }
+void JsonBase::push_back(JsonBase &&_other ){ get<Array>().emplace_back(std::move(_other)); }
 
 }

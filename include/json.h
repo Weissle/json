@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <iostream>
 
-#include "parse/reader.h"
+#include "utils/reader.h"
 #include "value/number.h"
 
 namespace wjson {
@@ -54,79 +54,55 @@ struct PrettyPackage : public DumpPackage{
 
 class JsonBase{
 
-protected:
 	// a hex char to int '0'~'9' 'a'~'f' 'A'~'F'
-	int HexToInt(const char c);
+	int hex_to_int(const char c);
 
 	// read a hex number which consist of 4 hex char
-	unsigned ReadHex4(Reader &reader);
+	unsigned read_4_hex(Reader &reader);
 
 	// From unicode to utf-8
-	void ToUTF8(std::string &s, Reader &reader);
+	void unicode_to_utf8(std::string &s, Reader &reader);
 
 
-	void __Parse(Reader &reader,JsonBase &ret);
+	void __parse(Reader &reader,JsonBase &ret);
 
-	std::string ReadStr(Reader &reader);
+	std::string read_str(Reader &reader);
 
-	void ReadStr(Reader &reader,std::string &ret);
+	void read_str(Reader &reader,std::string &ret);
 
-	void ObjectParse(Reader &reader,JsonBase &ret);
+	void object_parse(Reader &reader,JsonBase &ret);
 
-	void StringParse(Reader &reader,JsonBase &ret);
+	void string_parse(Reader &reader,JsonBase &ret);
 
-	void NumberParse(Reader &reader,JsonBase &ret);
+	void number_parse(Reader &reader,JsonBase &ret);
 
-	void BoolParse(Reader &reader,bool exp,JsonBase &ret);
+	void bool_parse(Reader &reader,bool exp,JsonBase &ret);
 
-	void NullParse(Reader &reader,JsonBase &ret);
+	void null_parse(Reader &reader,JsonBase &ret);
 
-	void ArrayParse(Reader &reader,JsonBase &ret);
+	void array_parse(Reader &reader,JsonBase &ret);
 
 	// Below two parse function are used for the user, allow of them will call Parse(const char*,JsonBase &) function.
 	// It will check that is any characters rest after the parse process is done.
 	// If it is, throw a exception.
 
-	void Parse(const char* ptr,JsonBase &ret);
+	void parse(const char* ptr,JsonBase &ret);
 
 protected:
 	using Variant = std::variant<Null,Bool,Number,String,Array,Object>;
 	Variant value_;
 
-
-
-	public:
+// Simple function, just write in header.
+public:
 	JsonBase(){}
-	JsonBase(JsonBase &&_rv){
-		value_ = std::move(_rv.value_);
-	}
+	JsonBase(JsonBase &&_rv):value_(std::move(_rv.value_)){}
 	JsonBase(const std::nullptr_t b):JsonBase(){}
 	JsonBase(const bool b):value_(b){}
 	JsonBase(const double d):value_(d){}
 	JsonBase(const char *s):value_(s){}
 	JsonBase(const std::string &s):value_(s){}
 
-	JsonBase(ValueType _type);
-	~JsonBase(){ 
-		// static int release_count = 0;
-		// release_count++;
-		// if(release_count % 1000 == 0) 
-		// std::cout<<"release : "<<release_count<<std::endl; 
-	}
-
-	ValueType GetType()const { return (ValueType)value_.index(); }
-
-	template<class T>
-	bool Is()const;
-
-	template<class T>
-	JsonBase& To();
-
-	template<class T>
-	const T& Get()const;
-
-	template<class T>
-	T& Get();
+	ValueType type()const { return (ValueType)value_.index(); }
 
 	JsonBase& operator=(const std::nullptr_t b){ value_.emplace<Null>(nullptr); return *this;}
 	JsonBase& operator=(const bool b){ value_.emplace<Bool>(b); return *this;}
@@ -137,69 +113,81 @@ protected:
 	JsonBase& operator=(const std::string &s){ value_.emplace<String>(s); return *this;}
 	JsonBase& operator=(JsonBase&& _rv){ value_ = std::move(_rv.value_); return *this;}
 
-	bool IsBool()const{ return Is<bool>(); }
-	bool IsNumber()const{ return Is<Number>(); }
-	bool IsNull()const{ return Is<std::nullptr_t>(); }
-	bool IsObject()const{ return Is<Object>(); }
-	bool IsString()const{ return Is<String>(); }
-	bool IsArray()const{ return Is<Array>(); }
+	JsonBase(ValueType _type);
 
+// common function
+	size_t size()const;
 
+	template<class T>
+	bool is()const;
+
+	template<class T>
+	JsonBase& to();
+
+	template<class T>
+	const T& get()const;
+
+	template<class T>
+	T& get();
+
+// For Object 
+public:
 	JsonBase& operator[](const std::string &s);
 	JsonBase& operator[](std::string &&s);
-	void Remove(const std::string &s);
+	void remove(const std::string &s);
 
+	ObjectConstIterator object_begin()const;
+	ObjectConstIterator object_end()const;
+	ObjectIterator object_begin();
+	ObjectIterator object_end();
+
+
+	void clear();
+
+// For Array
+public:
 	JsonBase& operator[](const int idx);
-	void Resize(int s);
-	void PushBack(JsonBase &&_other );
+	void resize(int s);
+	void push_back(JsonBase &&_other );
+	ArrayConstIterator array_begin()const;
+	ArrayConstIterator array_end()const;
 
-	void Clear();
-
-public:
-	ObjectConstIterator ObjectBegin()const;
-	ObjectConstIterator ObjectEnd()const;
-	ArrayConstIterator ArrayBegin()const;
-	ArrayConstIterator ArrayEnd()const;
-
-	ObjectIterator ObjectBegin();
-	ObjectIterator ObjectEnd();
-	ArrayIterator ArrayBegin();
-	ArrayIterator ArrayEnd();
+	ArrayIterator array_begin();
+	ArrayIterator array_end();
 
 public:
-	size_t Size()const;
 
-	void Dump(std::stringstream &stream)const;
+	void dump(std::stringstream &stream)const;
 
-	std::string Dump()const;
+	std::string dump()const;
 
-	void Pretty(std::stringstream &stream,int indent_num=2,int indent_char=' ')const;
+	void pretty(std::stringstream &stream,int indent_num=2,int indent_char=' ')const;
 
-	std::string Pretty(int indent_num=2,int indent_char=' ')const;
+	std::string pretty(int indent_num=2,int indent_char=' ')const;
 
-	void Parse(const std::string &s);
+	void parse(const std::string &s);
 
-	void Parse(const char* ptr);
+	void parse(const char* ptr);
 };
 
 template<class T>
-bool JsonBase::Is()const{
+bool JsonBase::is()const{
 	return std::holds_alternative<T>(value_);
 }
 
 template<class T>
-JsonBase& JsonBase::To(){
-	if(Is<T>() == false) value_.emplace<T>();
+JsonBase& JsonBase::to(){
+	if(is<T>() == false) value_.emplace<T>();
 	return *this;
 }
 
 template<class T>
-const T& JsonBase::Get()const{
+const T& JsonBase::get()const{
 	return std::get<T>(value_);
 }
 
 template<class T>
-T& JsonBase::Get(){
+T& JsonBase::get(){
 	return std::get<T>(value_);
 }
 

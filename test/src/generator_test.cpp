@@ -13,7 +13,7 @@ protected:
 	wjson::Json json1;
 	void SetUp() override{
 		//bool
-		json1.To<wjson::Object>();
+		json1.to<wjson::Object>();
 		json1["happy"] = true;
 		json1["sad"] = false;
 		json1["drunk"] = false;
@@ -35,7 +35,7 @@ protected:
 		json1["long long max"] = (long long)INT64_MAX;
 
 		//array
-		json1["array"].To<wjson::Array>().Resize(3);
+		json1["array"].to<wjson::Array>().resize(3);
 		json1["array"][2] = "idx2";
 		json1["array"][0] = 1245364;
 
@@ -43,44 +43,44 @@ protected:
 };
 
 TEST_F(JsonGeneratorTest, BoolType){
-	EXPECT_EQ(json1["happy"].Get<wjson::Bool>(), true);
-	EXPECT_EQ(json1["sad"].Get<wjson::Bool>(), false);
-	EXPECT_EQ(json1["drunk"].Get<wjson::Bool>(), false);
-	EXPECT_EQ(json1["happy"].IsBool(), true);
-	EXPECT_EQ(json1["sad"].IsBool(), true);
-	EXPECT_EQ(json1["drunk"].IsBool(), true);
-	EXPECT_EQ(json1["drunk"].IsNull(), false);
+	EXPECT_EQ(json1["happy"].get<wjson::Bool>(), true);
+	EXPECT_EQ(json1["sad"].get<wjson::Bool>(), false);
+	EXPECT_EQ(json1["drunk"].get<wjson::Bool>(), false);
+	EXPECT_EQ(json1["happy"].is<wjson::Bool>(), true);
+	EXPECT_EQ(json1["sad"].is<wjson::Bool>(), true);
+	EXPECT_EQ(json1["drunk"].is<wjson::Bool>(), true);
+	EXPECT_EQ(json1["drunk"].is<wjson::Null>(), false);
 }
 
 TEST_F(JsonGeneratorTest, Object){
-	EXPECT_EQ(json1["country"].IsObject(), true);
-	EXPECT_EQ(json1["country"].IsNull(), false);
-	EXPECT_EQ(json1["country"]["China"].Get<wjson::Bool>(), true);
-	EXPECT_EQ(json1["country"]["USA"].Get<wjson::Bool>(), false);
-	EXPECT_EQ(json1["country"].Size(), 2);
+	EXPECT_EQ(json1["country"].is<wjson::Object>(), true);
+	EXPECT_EQ(json1["country"].is<wjson::Null>(), false);
+	EXPECT_EQ(json1["country"]["China"].get<wjson::Bool>(), true);
+	EXPECT_EQ(json1["country"]["USA"].get<wjson::Bool>(), false);
+	EXPECT_EQ(json1["country"].size(), 2);
 }
 
 TEST_F(JsonGeneratorTest, String){
-	EXPECT_EQ(json1["str_c"].Get<wjson::String>(), "string_c");
-	EXPECT_EQ(json1["str"].Get<wjson::String>(), "string");
+	EXPECT_EQ(json1["str_c"].get<wjson::String>(), "string_c");
+	EXPECT_EQ(json1["str"].get<wjson::String>(), "string");
 }
 
 TEST_F(JsonGeneratorTest, Number){
-	EXPECT_EQ((double)json1["int"].Get<wjson::Number>(), 500);
-	EXPECT_EQ((double)json1["double"].Get<wjson::Number>(), 5.03);
-	EXPECT_EQ((double)json1["long long"].Get<wjson::Number>(), (long long)(0x80000000));
+	EXPECT_EQ((double)json1["int"].get<wjson::Number>(), 500);
+	EXPECT_EQ((double)json1["double"].get<wjson::Number>(), 5.03);
+	EXPECT_EQ((double)json1["long long"].get<wjson::Number>(), (long long)(0x80000000));
 }
 
 TEST_F(JsonGeneratorTest, Array){
-	EXPECT_EQ(json1["array"].Size(), 3);
-	EXPECT_EQ(json1["array"][1].IsNull(), true);
-	EXPECT_EQ(json1["array"][0].IsNull(), false);
-	EXPECT_EQ(json1["array"][0].Get<wjson::Number>(), 1245364);
-	EXPECT_EQ(json1["array"][0].Get<wjson::Number>(), 1245364);
+	EXPECT_EQ(json1["array"].size(), 3);
+	EXPECT_EQ(json1["array"][1].is<wjson::Null>(), true);
+	EXPECT_EQ(json1["array"][0].is<wjson::Null>(), false);
+	EXPECT_EQ(json1["array"][0].get<wjson::Number>(), 1245364);
+	EXPECT_EQ(json1["array"][0].get<wjson::Number>(), 1245364);
 }
 
 TEST_F(JsonGeneratorTest, Null){
-	EXPECT_EQ(json1["null"].IsNull(), true);
+	EXPECT_EQ(json1["null"].is<wjson::Null>(), true);
 }
 int main(int argc,char* argv[]){
 

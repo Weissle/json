@@ -19,13 +19,13 @@ public:
 	// If we use LookVChar() then get GetChar(), we will get 'a' and '\t' respectively.
 	// If we use LookVCharF() then get GetChar(), we will get two 'a'.
 	Reader(const char *p_);
-	void MoveNext(int s=1);
-	const char * GetPtr()const;
+	void move_next(int s=1);
+	const char * get_ptr()const;
 
-	char LookChar()const;
-	char LookVCharF();
-	char GetChar();
-	char GetVChar();
+	char look_char()const;
+	char look_vchar_f();
+	char get_char();
+	char get_vchar();
 
 };
 

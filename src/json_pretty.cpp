@@ -3,16 +3,16 @@
 
 namespace wjson {
 
-void JsonBase::Pretty(std::stringstream &stream,int indent_num,int indent_char)const{
+void JsonBase::pretty(std::stringstream &stream,int indent_num,int indent_char)const{
 	PrettyPackage pp;
 	pp.indent_char = indent_char;
 	pp.indent_num = indent_num;
 	pp(*this,&stream,0);
 }
 
-std::string JsonBase::Pretty(int indent_num,int indent_char)const{
+std::string JsonBase::pretty(int indent_num,int indent_char)const{
 	std::stringstream stream;
-	Pretty(stream,indent_num,indent_char);
+	pretty(stream,indent_num,indent_char);
 	return stream.str();
 }
 
@@ -48,13 +48,13 @@ void PrettyPackage::operator()(const Object &obj,std::stringstream *stream_ptr,i
 }
 
 void PrettyPackage::operator()(const JsonBase &json,std::stringstream *stream_ptr,int indent_level){
-	switch (json.GetType()) {
-		case ValueType::Null: DumpPackage::operator()(json.Get<Null>(),stream_ptr); return;
-		case ValueType::Bool: DumpPackage::operator()(json.Get<Bool>(),stream_ptr); return;
-		case ValueType::String: DumpPackage::operator()(json.Get<String>(),stream_ptr); return;
-		case ValueType::Number: DumpPackage::operator()(json.Get<Number>(),stream_ptr); return;
-		case ValueType::Array: (*this)(json.Get<Array>(),stream_ptr,indent_level); return;
-		case ValueType::Object: (*this)(json.Get<Object>(),stream_ptr,indent_level); return;
+	switch (json.type()) {
+		case ValueType::Null: DumpPackage::operator()(json.get<Null>(),stream_ptr); return;
+		case ValueType::Bool: DumpPackage::operator()(json.get<Bool>(),stream_ptr); return;
+		case ValueType::String: DumpPackage::operator()(json.get<String>(),stream_ptr); return;
+		case ValueType::Number: DumpPackage::operator()(json.get<Number>(),stream_ptr); return;
+		case ValueType::Array: (*this)(json.get<Array>(),stream_ptr,indent_level); return;
+		case ValueType::Object: (*this)(json.get<Object>(),stream_ptr,indent_level); return;
 	}
 }
 

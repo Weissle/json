@@ -14,11 +14,11 @@ int main(){
 	wjson::Json json;
 	// wjson::Parse(ReadFromFile("citm_catalog.json"),json);
 	auto citm = ReadFromFile("data/twitter.json");
-	json.Parse(citm);
+	json.parse(citm);
 	stringstream stream;
-	json.Dump(stream);
+	json.dump(stream);
 	cout<<stream.rdbuf()<<endl;
-	cout << json.Pretty();
+	cout << json.pretty();
 	return 0;
 }
 

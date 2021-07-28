@@ -1,38 +1,38 @@
-#include "parse/reader.h"
+#include "utils/reader.h"
 #include <cctype>
 
 namespace wjson{
 
 
-void Reader::MoveNext(int s){ ptr += s; }
+void Reader::move_next(int s){ ptr += s; }
 
 Reader::Reader(const char *p_):ptr(p_){}
 
-const char * Reader::GetPtr()const{ return ptr; }
+const char * Reader::get_ptr()const{ return ptr; }
 
 
 
 // return true means c is not '\0'
 
-char Reader::LookChar()const{
+char Reader::look_char()const{
 	return *ptr;
 }
 
-char Reader::LookVCharF(){
+char Reader::look_vchar_f(){
 	int idx=0;
 	while(isspace(ptr[idx])) ++idx;
-	MoveNext(idx);
+	move_next(idx);
 	return *ptr;
 }
 
 
-char Reader::GetChar(){
+char Reader::get_char(){
 	return *(ptr++);
 }
 
-char Reader::GetVChar(){
+char Reader::get_vchar(){
 	while(isspace(*ptr)) ++ptr;
-	return GetChar();
+	return get_char();
 }
 
 }
