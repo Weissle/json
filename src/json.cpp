@@ -26,6 +26,18 @@ size_t JsonBase::size()const{
 	}
 }
 
+bool JsonBase::operator==(const JsonBase& _rv)const{
+	if(value_.index() != _rv.value_.index()) return false;
+	switch (value_.index()) {
+		case (int)ValueType::Null : return true;
+		case (int)ValueType::Bool : return get<Bool>() == _rv.get<Bool>();
+		case (int)ValueType::String : return get<String>() == _rv.get<String>();
+		case (int)ValueType::Number : return get<Number>() == _rv.get<Number>();
+		case (int)ValueType::Array : return get<Array>() == _rv.get<Array>();
+		case (int)ValueType::Object : return get<Object>() == _rv.get<Object>();
+		default: return false;
+	}
+}
 
 
 ObjectConstIterator JsonBase::object_begin()const{

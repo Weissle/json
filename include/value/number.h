@@ -27,6 +27,8 @@ public:
 	template<class T>
 	Number& operator=(T &&v);
 	Number& operator=(const char *ptr);
+	bool operator==(const Number &_rhs)const;
+	bool operator==(const double &_rhs)const;
 
 	operator double()const;	
 	void Dump(std::stringstream &stream)const;

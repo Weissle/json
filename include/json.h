@@ -116,6 +116,8 @@ public:
 	JsonBase(ValueType _type);
 
 // common function
+public:
+
 	size_t size()const;
 
 	template<class T>
@@ -129,6 +131,8 @@ public:
 
 	template<class T>
 	T& get();
+
+	bool operator==(const JsonBase& _rv)const;
 
 // For Object 
 public:
