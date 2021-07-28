@@ -186,13 +186,16 @@ void JsonBase::BoolParse(Reader &reader,bool exp,JsonBase &ret){
 	if(!exp) reader.MoveNext();
 	const char *ptr = reader.GetPtr();
 
-	static const char* true_chars = "true";
-	static const char* false_chars = "alse"; //ignore f;
+	static constexpr char* true_chars = "true";
+	static constexpr char* false_chars = "alse"; //ignore f;
+	static const unsigned false_unsigned = *(static_cast<const unsigned*>(static_cast<const void*>(false_chars)));
+	static const unsigned true_unsigned = *(static_cast<const unsigned*>(static_cast<const void*>(true_chars)));
+	const unsigned tmp = *(static_cast<const unsigned*>(static_cast<const void*>(ptr)));
 	if(exp){
-		if(memcmp(ptr,true_chars,4) != 0) throw "strange value type";
+		if(tmp != true_unsigned) throw "strange value type";
 	}
 	else{
-		if(memcmp(ptr,false_chars,4) != 0) throw "strange value type";
+		if(tmp != false_unsigned) throw "strange value type";
 	}
 	reader.MoveNext(4);
 	ret = exp;
@@ -201,7 +204,9 @@ void JsonBase::BoolParse(Reader &reader,bool exp,JsonBase &ret){
 void JsonBase::NullParse(Reader &reader,JsonBase &ret){
 	const char *ptr = reader.GetPtr();
 	static const char* null_chars = "null";
-	if(memcmp(ptr,null_chars,4) != 0) throw "strange value type";
+	static const unsigned null_unsigned = *(static_cast<const unsigned*>(static_cast<const void*>(null_chars)));
+	const unsigned tmp = *(static_cast<const unsigned*>(static_cast<const void*>(ptr)));
+	if(tmp != null_unsigned) throw "strange value type";
 	reader.MoveNext(4);
 	ret = nullptr;
 }

@@ -35,12 +35,21 @@ using ObjectIterator = typename Object::iterator;
 using ArrayIterator = typename Array::iterator;
 
 struct DumpPackage{
-	void operator()(const Null &,std::stringstream *stream);
-	void operator()(const Bool &b,std::stringstream *stream);
-	void operator()(const String &s,std::stringstream *stream);
-	void operator()(const Number &n,std::stringstream *stream);
-	void operator()(const Array &arr,std::stringstream *stream);
-	void operator()(const Object &obj,std::stringstream *stream);
+public:
+	void operator()(const Null &,std::stringstream *stream_ptr);
+	void operator()(const Bool &b,std::stringstream *stream_ptr);
+	void operator()(const String &s,std::stringstream *stream_ptr);
+	void operator()(const Number &n,std::stringstream *stream_ptr);
+	void operator()(const Array &arr,std::stringstream *stream_ptr);
+	void operator()(const Object &obj,std::stringstream *stream_ptr);
+};
+
+struct PrettyPackage : public DumpPackage{
+	char indent_char,indent_num;
+	void operator()(const Array &arr,std::stringstream *stream_ptr,int indent_level);
+	void operator()(const Object &obj,std::stringstream *stream_ptr,int indent_level);
+	void operator()(const JsonBase &json,std::stringstream *stream_ptr,int indent_level);
+	void Indent(std::stringstream *stream_ptr,const int indent_level);
 };
 
 class JsonBase{
@@ -85,7 +94,6 @@ protected:
 	Variant value_;
 
 
-	void Indent(std::stringstream &stream,const int indent_num,const char indent_char,const int indent_level)const;
 
 	public:
 	JsonBase(){}
@@ -162,6 +170,12 @@ public:
 	size_t Size()const;
 
 	void Dump(std::stringstream &stream)const;
+
+	std::string Dump()const;
+
+	void Pretty(std::stringstream &stream,int indent_num=2,int indent_char=' ')const;
+
+	std::string Pretty(int indent_num=2,int indent_char=' ')const;
 
 	void Parse(const std::string &s);
 

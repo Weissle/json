@@ -1,5 +1,4 @@
 #include "include/json.h"
-#include "parse/parse.h"
 
 #include <iostream>
 #include <sstream>
@@ -14,11 +13,12 @@ std::string ReadFromFile(const std::string path);
 int main(){
 	wjson::Json json;
 	// wjson::Parse(ReadFromFile("citm_catalog.json"),json);
-	auto citm = ReadFromFile("data/citm_catalog.json");
-	wjson::Parse(citm,json);
+	auto citm = ReadFromFile("data/twitter.json");
+	json.Parse(citm);
 	stringstream stream;
 	json.Dump(stream);
-	//cout<<stream.rdbuf()<<endl;
+	cout<<stream.rdbuf()<<endl;
+	cout << json.Pretty();
 	return 0;
 }
 

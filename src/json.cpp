@@ -27,14 +27,6 @@ size_t JsonBase::Size()const{
 }
 
 
-void JsonBase::Dump(std::stringstream &stream)const{
-	std::visit(DumpPackage(), value_,std::variant<std::stringstream*>(&stream));
-}
-void JsonBase::Indent(std::stringstream &stream,const int indent_num,const char indent_char,const int indent_level)const{
-	for (int i = 0; i < indent_level * indent_num; ++i){ 
-		stream<<indent_char;
-	}
-}
 
 ObjectConstIterator JsonBase::ObjectBegin()const{
 	return Get<Object>().begin();
