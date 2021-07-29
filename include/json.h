@@ -177,7 +177,7 @@ public:
 
 template<class T>
 JsonBase& JsonBase::operator=(T&& _v){
-	value_ = std::forward(_v);
+	value_ = _v;
 	return *this;
 }
 
