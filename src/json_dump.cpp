@@ -1,5 +1,7 @@
 #include "json.h"
+#include <iomanip>
 #include <variant>
+#include <ios>
 
 namespace wjson {
 
@@ -9,6 +11,7 @@ void JsonBase::dump(std::stringstream &stream)const{
 
 std::string JsonBase::dump()const{
 	std::stringstream stream;
+	stream  << std::setiosflags(std::ios::fixed) << std::setprecision(6);
 	dump(stream);
 	return stream.str();
 }

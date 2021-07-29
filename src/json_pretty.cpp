@@ -1,6 +1,7 @@
 #include "json.h"
 #include <sstream>
-
+#include <iomanip>
+#include <ios>
 namespace wjson {
 
 void JsonBase::pretty(std::stringstream &stream,int indent_num,int indent_char)const{
@@ -12,6 +13,7 @@ void JsonBase::pretty(std::stringstream &stream,int indent_num,int indent_char)c
 
 std::string JsonBase::pretty(int indent_num,int indent_char)const{
 	std::stringstream stream;
+	stream  << std::setiosflags(std::ios::fixed) << std::setprecision(6);
 	pretty(stream,indent_num,indent_char);
 	return stream.str();
 }
