@@ -8,6 +8,7 @@
 #include <memory>
 #include <assert.h>
 #include <sstream>
+#include <utility>
 #include <variant>
 #include <unordered_map>
 #include <iostream>
@@ -104,19 +105,19 @@ public:
 
 	ValueType type()const { return (ValueType)value_.index(); }
 
-	JsonBase& operator=(const std::nullptr_t b){ value_.emplace<Null>(nullptr); return *this;}
-	JsonBase& operator=(const bool b){ value_.emplace<Bool>(b); return *this;}
 	JsonBase& operator=(const double d){ value_.emplace<Number>(d); return *this;}
 	JsonBase& operator=(const int d){ value_.emplace<Number>(d); return *this;}
 	JsonBase& operator=(const long long d){ value_.emplace<Number>(d); return *this;}
 	JsonBase& operator=(const char *s){ value_.emplace<String>(s); return *this;}
-	JsonBase& operator=(const std::string &s){ value_.emplace<String>(s); return *this;}
 	JsonBase& operator=(JsonBase&& _rv){ value_ = std::move(_rv.value_); return *this;}
 
 	JsonBase(ValueType _type);
 
 // common function
 public:
+
+	template<class T>
+	JsonBase& operator=(T&& _v);
 
 	size_t size()const;
 
@@ -173,6 +174,12 @@ public:
 
 	void parse(const char* ptr);
 };
+
+template<class T>
+JsonBase& JsonBase::operator=(T&& _v){
+	value_ = std::forward(_v);
+	return *this;
+}
 
 template<class T>
 bool JsonBase::is()const{

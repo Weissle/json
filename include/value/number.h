@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <sstream>
+#include <utility>
 #include <variant>
 #include <string>
 
@@ -36,11 +37,11 @@ public:
 };
 
 template<class T>
-Number::Number(T && v):value(v){};
+Number::Number(T && v):value(std::forward<T>(v)){};
 
 template<class T>
 void Number::set(T && v){
-	value = v;
+	value = std::forward<T>(v);
 }
 
 template<class T>
