@@ -14,8 +14,7 @@ class Number{
 	std::variant<double,std::string> value;
 public:
 	Number();
-	template<class T>
-	Number(T && v);
+	Number(double v);
 	Number(const char *ptr);
 	Number(const char* ori_begin,const char* ori_end);
 
@@ -37,16 +36,13 @@ public:
 };
 
 template<class T>
-Number::Number(T && v):value(std::forward<T>(v)){};
-
-template<class T>
 void Number::set(T && v){
-	value = std::forward<T>(v);
+	value = v;
 }
 
 template<class T>
 Number& Number::operator=(T &&v){
-	value = std::forward<T>(v);
+	value = v;
 	return *this;
 }
 

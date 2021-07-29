@@ -96,28 +96,33 @@ protected:
 // Simple function, just write in header.
 public:
 	JsonBase(){}
-	JsonBase(JsonBase &&_rv):value_(std::move(_rv.value_)){}
+	JsonBase(const double d){ value_.emplace<2>(d); }
+	JsonBase(const int d){ value_.emplace<2>(d); }
+	JsonBase(const long long d){ value_.emplace<2>(d); }
 	JsonBase(const std::nullptr_t b):JsonBase(){}
 	JsonBase(const bool b):value_(b){}
-	JsonBase(const double d):value_(d){}
-	JsonBase(const char *s):value_(s){}
-	JsonBase(const std::string &s):value_(s){}
+	JsonBase(const char *s){ value_.emplace<3>(s); }
+	JsonBase(const String &s):value_(s){}
+	JsonBase(const Array &arr):value_(arr){}
+	JsonBase(const Object &ojb):value_(ojb){}
 
 	ValueType type()const { return (ValueType)value_.index(); }
 
-	JsonBase& operator=(const double d){ value_.emplace<Number>(d); return *this;}
-	JsonBase& operator=(const int d){ value_.emplace<Number>(d); return *this;}
-	JsonBase& operator=(const long long d){ value_.emplace<Number>(d); return *this;}
-	JsonBase& operator=(const char *s){ value_.emplace<String>(s); return *this;}
-	JsonBase& operator=(JsonBase&& _rv){ value_ = std::move(_rv.value_); return *this;}
 
 	JsonBase(ValueType _type);
 
 // common function
 public:
 
-	template<class T>
-	JsonBase& operator=(T&& _v);
+	JsonBase& operator=(const double d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const int d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const long long d){ value_.emplace<Number>(d); return *this;}
+	JsonBase& operator=(const std::nullptr_t b){ value_.emplace<Null>(); return *this;}
+	JsonBase& operator=(const bool b){ value_.emplace<Bool>(b); return *this;}
+	JsonBase& operator=(const char *c){ value_.emplace<String>(c); return *this;}
+	JsonBase& operator=(const String &s){ value_.emplace<String>(s); return *this;}
+	JsonBase& operator=(const Array &arr){ value_.emplace<Array>(arr); return *this;}
+	JsonBase& operator=(const Object &obj){ value_.emplace<Object>(obj); return *this;}
 
 	size_t size()const;
 
@@ -139,7 +144,7 @@ public:
 public:
 	JsonBase& operator[](const std::string &s);
 	JsonBase& operator[](std::string &&s);
-	void remove(const std::string &s);
+	void erase(const std::string &s);
 
 	ObjectConstIterator object_begin()const;
 	ObjectConstIterator object_end()const;
@@ -153,7 +158,8 @@ public:
 public:
 	JsonBase& operator[](const int idx);
 	void resize(int s);
-	void push_back(JsonBase &&_other );
+	void push_back(const JsonBase & t);
+
 	ArrayConstIterator array_begin()const;
 	ArrayConstIterator array_end()const;
 
@@ -176,12 +182,6 @@ public:
 };
 
 template<class T>
-JsonBase& JsonBase::operator=(T&& _v){
-	value_ = _v;
-	return *this;
-}
-
-template<class T>
 bool JsonBase::is()const{
 	return std::holds_alternative<T>(value_);
 }
@@ -201,6 +201,7 @@ template<class T>
 T& JsonBase::get(){
 	return std::get<T>(value_);
 }
+
 
 using Json = JsonBase;
 

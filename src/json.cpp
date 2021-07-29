@@ -40,6 +40,10 @@ bool JsonBase::operator==(const JsonBase& _rv)const{
 }
 
 
+void JsonBase::push_back(const JsonBase & t){
+	std::get<Array>(value_).push_back(t);
+}
+
 ObjectConstIterator JsonBase::object_begin()const{
 	return get<Object>().begin();
 }
@@ -86,12 +90,11 @@ void JsonBase::clear(){
 	value_.emplace<0>(nullptr);
 }
 
-void JsonBase::remove(const std::string &s){ get<Object>().erase(s); }
+void JsonBase::erase(const std::string &s){ get<Object>().erase(s); }
 
 JsonBase& JsonBase::operator[](const int idx){ return get<Array>()[idx]; }
 
 void JsonBase::resize(int s){ get<Array>().resize(s); }
 
-void JsonBase::push_back(JsonBase &&_other ){ get<Array>().emplace_back(std::move(_other)); }
 
 }

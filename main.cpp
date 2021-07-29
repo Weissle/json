@@ -47,11 +47,28 @@ int main(){
 	json["unknow"] = 123456.789;
 	cout << json["unknow"].is<Number>() << endl; // true
 	cout << json["unknow"].get<Number>() << endl;// 123456
-	
 
+	//array
+	json["array"].resize(0);
+	json["array"].push_back(123);
+	json["array"].push_back("str");
+	Json arr(ValueType::Array);
+	arr.push_back(nullptr);
+	json["array"].push_back(arr);
+	
+	//json
+	json.erase("array");
+	json.erase("info");
+	Array arr2;
+	arr2.push_back(true);
+	arr2.push_back(nullptr);
+	json["arr"] = arr2;
 	// dump and pretty
 	cout << json.dump() << endl;
 	cout << json.pretty(2,' ') << endl;
+
+
+
 
 	return 0;
 }

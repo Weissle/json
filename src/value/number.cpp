@@ -6,7 +6,10 @@
 
 namespace wjson {
 
-Number::Number():Number(0){}
+Number::Number():value(0){}
+
+Number::Number(double v):value(v){}
+
 Number::Number(const char *ptr){
 	value.emplace<1>(ptr);
 }
